@@ -22,6 +22,9 @@
   --f-display: 'Bricolage Grotesque Variable', 'Bricolage Grotesque', sans-serif;
   --f-body: 'Inter Variable', Inter, system-ui, sans-serif;
 
+  /* Header nel flusso: 14px sopra + barra (10 + 48 + 10). L'hero ne tiene conto. */
+  --header-h: 82px;
+
   --ease-bounce: cubic-bezier(.34, 1.35, .64, 1);
   --ease-name: cubic-bezier(.34, 1.2, .64, 1);
 }

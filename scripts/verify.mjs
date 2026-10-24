@@ -59,6 +59,34 @@ async function checkPage(page, vp, reduce) {
   check(facts.fontsLoaded.some((f) => f.includes('Bricolage')) && facts.fontsLoaded.some((f) => f.includes('Inter')), `font locali caricati (${[...new Set(facts.fontsLoaded)].join(', ')})`);
   check(facts.externalFonts === 0, 'nessuna richiesta a Google Fonts');
 
+  const layout = await page.evaluate(() => {
+    const r = (sel) => document.querySelector(sel).getBoundingClientRect();
+    const hero = r('#top');
+    const scroll = r('.hero__scroll span');
+    const replay = r('.hero__replay');
+    const name = r('.lg-name__title');
+    const hint = r('[data-hdr-hint]');
+    const roles = getComputedStyle(document.querySelector('.lg-name__roles')).display;
+    const services = [...document.querySelectorAll('.service')].map((e) => Math.round(e.getBoundingClientRect().width));
+    const sel = getComputedStyle(document.body, '::selection');
+    return {
+      heroBottom: Math.round(hero.bottom),
+      vh: window.innerHeight,
+      scrollVisible: scroll.bottom <= window.innerHeight,
+      replayVisible: replay.bottom <= window.innerHeight,
+      hintOverlap: hint.width > 0 && hint.left < name.right,
+      roles,
+      services,
+      selection: [sel.backgroundColor, sel.color],
+    };
+  });
+  check(layout.heroBottom === layout.vh, `l'hero finisce al bordo dello schermo (${layout.heroBottom} / ${layout.vh})`);
+  check(layout.scrollVisible && layout.replayVisible, '"Scorri ↓" e "↺ Rivedi" visibili al primo caricamento');
+  check(!layout.hintOverlap, "l'invito nell'header non si sovrappone al nome");
+  check(vp.width < 420 ? layout.roles === 'none' : layout.roles !== 'none', `ruoli nell'header ${vp.width < 420 ? 'nascosti' : 'visibili'}`);
+  check(new Set(layout.services).size === 1, `voci di Servizi a colonne uguali (${layout.services.join(', ')})`);
+  check(layout.selection[0] === 'rgb(253, 233, 220)' && layout.selection[1] === 'rgb(20, 33, 61)', `selezione intonata (${layout.selection.join(' / ')})`);
+
   await page.screenshot({ path: `${OUT}/${tag}-hero.png` });
   await page.screenshot({ path: `${OUT}/${tag}-full.png`, fullPage: true });
 

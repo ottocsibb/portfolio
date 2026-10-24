@@ -12,6 +12,8 @@ body {
   overflow-x: clip;
 }
 
+::selection { background: var(--c-accent-light); color: var(--c-night); }
+
 a { color: var(--c-night); }
 a:hover { color: var(--c-accent-dark); }
 

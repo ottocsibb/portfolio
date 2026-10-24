@@ -21,6 +21,8 @@ colors:
   accent: "#F26A1B"
   accent-dark: "#B4470C"
   accent-light: "#FDE9DC"
+  header-glass: "rgba(255, 255, 255, 0.94)"
+  shadow-board: "rgba(0, 0, 0, 0.3)"
 typography:
   display:
     fontFamily: "'Bricolage Grotesque', sans-serif"
@@ -34,24 +36,77 @@ typography:
     fontWeight: 800
     lineHeight: 1.02
     letterSpacing: "-0.03em"
+  headline-services:
+    fontFamily: "'Bricolage Grotesque', sans-serif"
+    fontSize: "clamp(32px, 3.6vw, 48px)"
+    fontWeight: 800
+    lineHeight: 1.05
+    letterSpacing: "-0.03em"
+  headline-contact:
+    fontFamily: "'Bricolage Grotesque', sans-serif"
+    fontSize: "clamp(40px, 5.4vw, 76px)"
+    fontWeight: 800
+    lineHeight: 0.98
+    letterSpacing: "-0.035em"
   title:
     fontFamily: "'Bricolage Grotesque', sans-serif"
     fontSize: "22px"
     fontWeight: 700
     lineHeight: 1.15
+  market-id:
+    fontFamily: "'Bricolage Grotesque', sans-serif"
+    fontSize: "18px"
+    fontWeight: 800
+  lead-lg:
+    fontFamily: "Inter, system-ui, sans-serif"
+    fontSize: "20px"
+    fontWeight: 400
+  lead:
+    fontFamily: "Inter, system-ui, sans-serif"
+    fontSize: "18px"
+    fontWeight: 400
   body:
     fontFamily: "Inter, system-ui, sans-serif"
     fontSize: "17px"
     fontWeight: 400
     lineHeight: 1.6
+  body-card:
+    fontFamily: "Inter, system-ui, sans-serif"
+    fontSize: "16px"
+    fontWeight: 400
+  body-sm:
+    fontFamily: "Inter, system-ui, sans-serif"
+    fontSize: "15px"
+    fontWeight: 400
+  ui:
+    fontFamily: "Inter, system-ui, sans-serif"
+    fontSize: "14px"
+    fontWeight: 600
+  kicker:
+    fontFamily: "Inter, system-ui, sans-serif"
+    fontSize: "14px"
+    fontWeight: 700
+    letterSpacing: "0.08em"
+  caption:
+    fontFamily: "Inter, system-ui, sans-serif"
+    fontSize: "12px"
+    fontWeight: 600
+  micro:
+    fontFamily: "Inter, system-ui, sans-serif"
+    fontSize: "11px"
+    fontWeight: 600
   label:
     fontFamily: "Inter, system-ui, sans-serif"
     fontSize: "13px"
     fontWeight: 700
     letterSpacing: "0.08em"
 rounded:
+  hairline: "2px"
+  dot: "3px"
+  tile: "6px"
   task: "8px"
   logo-brick: "9px"
+  tip: "10px"
   panel: "14px"
   chip-tile: "16px"
   card: "20px"
@@ -139,7 +194,9 @@ La pagina è un arco cromatico: grigi spenti per il caos, blu per il problema an
 
 ## Layout
 
-Contenitore max 1240px, margini laterali 24px, sezioni con 112px di padding verticale. Le griglie a card usano `repeat(auto-fill, minmax(250–260px, 1fr))` con colonne uguali. Header sticky a 14px dall'alto, pillola bianca semitrasparente. L'hero occupa `min-height: 100svh` (nel prototipo 780px fissi; lo cambia `CLAUDE.md`).
+Contenitore max 1240px, margini laterali 24px, sezioni con 112px di padding verticale. Le griglie a card usano colonne uguali che riempiono lo spazio: `repeat(auto-fill, minmax(250px, 1fr))` per il percorso, `minmax(260px, 1fr)` per i progetti, `minmax(220px, 1fr)` per le voci di Servizi (nel prototipo erano in flex senza larghezza: corretto su indicazione di Mariano).
+
+Header sticky e nel flusso, a 14px dall'alto, pillola bianca semitrasparente alta 82px in tutto (`--header-h`). L'hero occupa `min-height: calc(100svh - var(--header-h))` (nel prototipo 780px fissi). Sotto i 420px l'header mostra solo il nome: la riga dei ruoli resta nell'hero.
 
 ## Elevation & Depth
 
@@ -149,11 +206,19 @@ Per lo più piatto. Ombre morbide e solo in pochi punti:
 - **Nuvolette/fumetti** (`0 10px 24px rgba(20,33,61,0.25)`).
 - **Mattoncino in hover** (`0 8px 16px rgba(20,33,61,0.2)`).
 
+### Motion
+
+- **Rimbalzo dei mattoncini** (`cubic-bezier(.34, 1.35, .64, 1)`, 520ms) e **scivolamento del nome** (`cubic-bezier(.34, 1.2, .64, 1)`, 520ms): il "leggero rimbalzo" richiesto dal brief.
+- Dissolvenze e sollevamenti di 600–700ms `ease` per i testi dell'hero; 160–300ms per nuvolette e interruttori.
+- Con "riduci movimento" non ci sono transizioni né animazioni.
+
 ## Shapes
 
 Angoli generosi e sempre arrotondati: pillole (999px) per pulsanti e chip; 20px per le card; 28px per i box di sezione; 14px per i pannelli della dashboard; 8px per i task; 9px per i mattoncini del logo. Le corsie dell'hero hanno un bordo tratteggiato da 1,5px #C5CCD8.
 
 ## Components
+
+- **Selezione del testo:** accento chiaro (#FDE9DC) con testo blu notte. Le scrollbar restano quelle del browser.
 
 - **Pulsanti:** pillole, 14×24px, peso 600. Primario blu notte su testo bianco, secondario bianco.
 - **Logo dell'header:** 4 cubetti 9×9 che diventano mattoncini 40×40 (44×44 su mobile), con nuvoletta blu notte.
