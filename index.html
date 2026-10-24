@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Portfolio Mariano</title>
+<script type="module" src="/src/main.ts"></script>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header__bar">
+    <nav class="site-header__nav" aria-label="Principale">
+
+      <div class="lg-zone" data-hdr-zone>
+        <button type="button" class="lg-trigger" data-hdr-trigger aria-expanded="false" aria-controls="lg-sections" aria-label="Mariano De Magistris, apri le sezioni"></button>
+        <div class="lg-name" data-hdr-name aria-hidden="true">
+          <span class="lg-name__title">Mariano De Magistris</span>
+          <span class="lg-name__roles">Team leader · Analista funzionale · Developer</span>
+        </div>
+        <div id="lg-sections" class="lg-sections" role="group" aria-label="Sezioni">
+          <div class="lg-slot" data-hdr-slot>
+            <button type="button" class="lg-brick lg-brick--case" data-target="caso" tabindex="-1" aria-label="Caso studio">
+              <span class="lg-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M7 16v-3M12 16V8M17 16v-5"></path></svg></span>
+              <span class="lg-tip" aria-hidden="true"><b>Caso studio</b><small>La dashboard dei mercati energetici</small></span>
+            </button>
+          </div>
+          <div class="lg-slot" data-hdr-slot>
+            <button type="button" class="lg-brick lg-brick--path" data-target="percorso" tabindex="-1" aria-label="Percorso">
+              <span class="lg-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="2.5"></circle><circle cx="18" cy="6" r="2.5"></circle><path d="M8.5 18c6 0 1-12 7-12"></path></svg></span>
+              <span class="lg-tip" aria-hidden="true"><b>Percorso</b><small>Sei anni, quattro ruoli</small></span>
+            </button>
+          </div>
+          <div class="lg-slot" data-hdr-slot>
+            <button type="button" class="lg-brick lg-brick--proj" data-target="progetti" tabindex="-1" aria-label="Progetti">
+              <span class="lg-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5 9-5z"></path><path d="M3 13l9 5 9-5"></path></svg></span>
+              <span class="lg-tip" aria-hidden="true"><b>Progetti</b><small>Cosa ho costruito</small></span>
+            </button>
+          </div>
+          <div class="lg-slot" data-hdr-slot>
+            <button type="button" class="lg-brick lg-brick--mail" data-target="contatti" tabindex="-1" aria-label="Scrivimi">
+              <span class="lg-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M4 7l8 6 8-6"></path></svg></span>
+              <span class="lg-tip" aria-hidden="true"><b>Scrivimi</b><small>Parliamo del tuo progetto</small></span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="hdr-status" aria-live="polite" data-hdr-status>
+        <span class="hdr-status__hint" data-hdr-hint>← Passa sul logo per esplorare</span>
+        <span class="hdr-status__cur" data-hdr-cur hidden><span class="hdr-status__dot" aria-hidden="true" data-hdr-dot></span><span data-hdr-label></span></span>
+      </div>
+
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<section id="top" class="hero" aria-label="Presentazione">
+  <div class="hero__fx" aria-hidden="true" data-hero-fx></div>
+  <div class="hero__content">
+    <h1 class="hero__title">
+      <span class="hero__line hero__line--problem" data-hero-step="w1"><span class="hero__w">Dal</span><span class="hero__w">problema</span></span>
+      <span class="hero__line hero__line--solution" data-hero-step="w2"><span class="hero__w">alla</span><span class="hero__nowrap"><span class="hero__word" data-hero-word>soluzione</span>.</span></span>
+    </h1>
+    <div class="hero__who" data-hero-step="r1">
+      <span class="hero__name">Mariano De Magistris</span>
+      <span class="hero__roles">Team leader · Analista funzionale · Developer</span>
+    </div>
+    <div class="hero__pitch" data-hero-step="r2">
+      <p>Prendo problemi complessi, li scompongo, creo soluzioni.</p>
+      <span class="hero__for">Per aziende e progetti privati</span>
+    </div>
+    <div class="hero__ctas" data-hero-step="r3">
+      <a class="btn btn--primary" href="#caso">Leggi un caso reale</a>
+      <!-- TODO: segnaposto, manca il PDF del CV senza dati personali -->
+      <a class="btn btn--secondary" href="#da-definire-cv" data-placeholder="cv">Scarica il CV</a>
+    </div>
+  </div>
+  <div class="hero__scroll" data-hero-step="r4"><span>Scorri ↓</span></div>
+  <button type="button" class="hero__replay" data-hero-replay>↺ Rivedi</button>
+</section>
+
+<section id="caso" class="case">
+  <div class="case__inner">
+    <div class="case__head">
+      <div class="case__kicker">Caso studio · mercati energetici</div>
+      <h2 class="h2">Una dashboard per sapere sempre cosa sta succedendo</h2>
+      <p class="case__lead">Guarda la differenza tra prima e dopo il progetto.</p>
+    </div>
+
+    <div class="case__ctrl-wrap">
+      <div class="case__ctrl" role="group" aria-label="Confronta prima e dopo">
+        <button type="button" class="case__toggle" data-case-view="prima" aria-pressed="true">Prima</button>
+        <button type="button" class="case__toggle" data-case-view="dopo" aria-pressed="false">Dopo</button>
+      </div>
+      <div class="case__progress" aria-hidden="true" data-case-progress><div class="case__progress-bar" data-case-progress-bar></div></div>
+    </div>
+
+    <div class="board" data-case-board>
+      <div class="board__bar">
+        <div class="board__title">
+          <span class="board__dot" aria-hidden="true"></span>
+          <span class="board__dot" aria-hidden="true"></span>
+          <span class="board__dot" aria-hidden="true"></span>
+          <span class="board__name">Controllo mercati energetici</span>
+          <span class="board__demo">· demo, dati simulati</span>
+        </div>
+        <div class="board__state" data-case-state>Nessuna vista d’insieme</div>
+      </div>
+
+      <div class="board__body" data-case-body>
+        <div class="silos" data-case-prima>
+          <div class="silo">
+            <div class="silo__head"><span class="silo__name">MGP</span><span class="silo__src">script notturni</span></div>
+            <div class="silo__task">Calcolo fabbisogno<span class="silo__q">?</span></div>
+            <div class="silo__task">Invio offerte<span class="silo__q">?</span></div>
+            <div class="silo__task">Acquisizione esiti<span class="silo__q">?</span></div>
+          </div>
+          <div class="silo">
+            <div class="silo__head"><span class="silo__name">MI</span><span class="silo__src">file condivisi</span></div>
+            <div class="silo__task">Ricalcolo fabbisogno<span class="silo__q">?</span></div>
+            <div class="silo__task">Invio offerte<span class="silo__q">?</span></div>
+            <div class="silo__task">Acquisizione esiti<span class="silo__q">?</span></div>
+          </div>
+          <div class="silo">
+            <div class="silo__head"><span class="silo__name">MSD</span><span class="silo__src">portale esterno</span></div>
+            <div class="silo__task">Offerte di riserva<span class="silo__q">?</span></div>
+            <div class="silo__task">Verifica ordini<span class="silo__q">?</span></div>
+            <div class="silo__task">Acquisizione esiti<span class="silo__q">?</span></div>
+          </div>
+          <div class="silo">
+            <div class="silo__head"><span class="silo__name">GAS</span><span class="silo__src">foglio Excel</span></div>
+            <div class="silo__task">Calcolo fabbisogno gas<span class="silo__q">?</span></div>
+            <div class="silo__task">Nomine<span class="silo__q">?</span></div>
+            <div class="silo__task">Acquisizione prezzi<span class="silo__q">?</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="case__caption" aria-live="polite" data-case-caption>Prima: ogni mercato con i suoi strumenti e nessuno stato condiviso. Per sapere cosa stava girando bisognava chiedere in giro.</p>
+  </div>
+</section>
+
+<section id="percorso" class="section section--percorso">
+  <div class="section__head">
+    <div class="kicker">Percorso</div>
+    <h2 class="h2">Dal codice alla guida dei progetti</h2>
+    <p class="section__lead">Sei anni in cui ogni ruolo ha aggiunto responsabilità senza toglierne: oggi seguo il cliente, guido il team e continuo a scrivere codice.</p>
+  </div>
+  <ol class="timeline">
+    <li class="card">
+      <div class="card__meta">2020 – 2022 · Matrix Consulting Group</div>
+      <h3 class="h3">Sviluppatore web</h3>
+      <p class="card__text">Le basi: web application a microservizi in Java e Python, database Oracle e i primi rilasci in collaudo e produzione.</p>
+    </li>
+    <li class="card">
+      <div class="card__meta">2022 – 2023 · Matrix Consulting Group</div>
+      <h3 class="h3">Senior Backend Developer</h3>
+      <p class="card__text">Più autonomia tecnica: architettura con Spring Boot, batch e code Kafka, reperibilità 24/7 e analisi tecnica nelle gare d'appalto.</p>
+    </li>
+    <li class="card">
+      <div class="card__meta">2023 – 2025 · Matrix Consulting Group</div>
+      <h3 class="h3">Task manager</h3>
+      <p class="card__text">Il passo verso la gestione: rapporto con il cliente, stime di effort, responsabilità dei rilasci e guida dei junior.</p>
+    </li>
+    <li class="card card--night">
+      <div class="card__meta">Dal 2025 · Mediacom</div>
+      <h3 class="h3">Task Manager · Analyst · Senior BE Developer</h3>
+      <p class="card__text">Tutto il percorso in un unico ruolo, dall'analisi al rilascio in produzione:</p>
+      <ul class="card__list">
+        <li>Rapporto con il cliente, tempi e rilasci</li>
+        <li>Analisi, definizione e stima dei task</li>
+        <li>Guida del team</li>
+        <li>Sviluppo backend e microfrontend</li>
+      </ul>
+    </li>
+  </ol>
+  <ul class="skills" aria-label="Competenze">
+    <li>Java</li>
+    <li>Spring Boot</li>
+    <li>Spring Batch</li>
+    <li>Kafka</li>
+    <li>Python</li>
+    <li>Flask</li>
+    <li>Pandas</li>
+    <li>Oracle</li>
+    <li>PostgreSQL</li>
+    <li>MongoDB</li>
+    <li>Azure DevOps</li>
+    <li>Claude Code</li>
+  </ul>
+</section>
+
+<section id="progetti" class="section section--progetti">
+  <h2 class="h2">Altri progetti</h2>
+  <div class="projects">
+    <article class="card">
+      <div class="card__meta">Cliente</div>
+      <h3 class="h3">Classificazione email con LLM</h3>
+      <p class="card__text card__text--16">Smistamento automatico della posta in arrivo.</p>
+    </article>
+    <article class="card">
+      <div class="card__meta">Cliente</div>
+      <h3 class="h3">Clustering semantico dei feedback</h3>
+      <p class="card__text card__text--16">Raggruppa per significato i feedback degli operatori di un servizio idrico, con test A/B tra modelli di embedding ed export dei temi in Jira. Python, Streamlit, MongoDB.</p>
+    </article>
+    <article class="card">
+      <div class="card__meta card__meta--accent">Personale</div>
+      <h3 class="h3">Gestionale del personale</h3>
+      <p class="card__text card__text--16">Anagrafica dei dipendenti con commesse, timesheet settimanali, approvazioni per i manager e grafici su ore e costi. React, Fastify, Prisma, PostgreSQL.</p>
+    </article>
+    <article class="card">
+      <div class="card__meta card__meta--accent">Personale</div>
+      <h3 class="h3">Classificatore semantico con LLM</h3>
+      <p class="card__text card__text--16">Un knowledge graph 3D che collega note e parole per significato: embedding, comunità semantiche e spiegazioni in linguaggio naturale con LLM locali. React Three Fiber, pgvector, Ollama.</p>
+    </article>
+  </div>
+</section>
+
+<section id="servizi" class="section section--servizi">
+  <div class="services">
+    <div class="services__head">
+      <h2 class="h2 h2--services">Per aziende e progetti privati</h2>
+      <p>Seguo tutto il processo, o entro dove il progetto si è fermato.</p>
+    </div>
+    <div class="services__list">
+      <div class="service"><div class="service__title">Guida del team</div><div class="service__text">Task, priorità, avanzamento visibile.</div></div>
+      <div class="service"><div class="service__title">Analisi funzionale</div><div class="service__text">Requisiti chiari prima del codice.</div></div>
+      <div class="service"><div class="service__title">Sviluppo backend e AI</div><div class="service__text">Pipeline, LLM, automazioni.</div></div>
+      <div class="service"><div class="service__title">Consegna completa</div><div class="service__text">Test, documentazione, rilascio.</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="contatti" class="section section--contatti">
+  <div class="contact">
+    <div class="contact__text">
+      <h2 class="h2 h2--contact">Hai un'idea e non sai come realizzarla?</h2>
+      <p>Parliamone.</p>
+    </div>
+    <div class="contact__links">
+      <a class="btn btn--primary" href="mailto:mariano_demagistris@hotmail.it">Raccontamelo</a>
+      <!-- TODO: segnaposto, mancano gli URL di LinkedIn e GitHub -->
+      <a class="btn btn--secondary" href="#da-definire-linkedin" data-placeholder="linkedin">LinkedIn</a>
+      <a class="btn btn--secondary" href="#da-definire-github" data-placeholder="github">GitHub</a>
+    </div>
+  </div>
+  <footer class="footer">
+    <span>© 2026 Mariano De Magistris</span>
+    <span>Dal problema alla soluzione.</span>
+  </footer>
+</section>
+
+</main>
+</body>
+</html>
