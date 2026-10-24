@@ -5,5 +5,7 @@ import './styles/base.css';
 import './styles/header.css';
 import './styles/sections.css';
 import { initHeader } from './header';
+import { initHero } from './hero/hero';
 
 initHeader();
+initHero();

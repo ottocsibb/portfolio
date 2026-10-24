@@ -4,6 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Portfolio Mariano</title>
+<script>
+  // Prima del primo disegno: se l'hero si animerà, nasconde subito testi ed evidenziatore.
+  // Se lo script principale non parte entro 4 s, torna lo stato fermo.
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.documentElement.classList.add('hero-pending');
+    setTimeout(function () { document.documentElement.classList.remove('hero-pending'); }, 4000);
+  }
+</script>
 <script type="module" src="/src/main.ts"></script>
 </head>
 <body>

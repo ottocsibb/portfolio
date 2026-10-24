@@ -218,6 +218,7 @@ Angoli generosi e sempre arrotondati: pillole (999px) per pulsanti e chip; 20px 
 
 ## Components
 
+- **Evidenziatore di "soluzione":** rettangolo arancione esattamente sul riquadro della parola, angoli esterni 14px, nessuna tacca interna. Nello stato fermo è un fondo CSS; con l'animazione lo compongono i 36 pezzi del canvas (12×3).
 - **Selezione del testo:** accento chiaro (#FDE9DC) con testo blu notte. Le scrollbar restano quelle del browser.
 
 - **Pulsanti:** pillole, 14×24px, peso 600. Primario blu notte su testo bianco, secondario bianco.
