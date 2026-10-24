@@ -1,0 +1,30 @@
+:root {
+  --c-page: #EEF1F6;
+  --c-night: #14213D;
+  --c-blue: #2C3E66;
+  --c-night-card: #1F2E50;
+  --c-text-2: #4A5672;
+  --c-problem: #6B7894;
+  --c-on-night: #C3CBDA;
+  --c-chaos-1: #C5CCD8;
+  --c-chaos-2: #A3ADBF;
+  --c-chaos-3: #8E99AD;
+  --c-chaos-4: #7D889C;
+  --c-chaos-5: #5B6880;
+  --c-border: #C5CCD8;
+  --c-track: #DDE2EC;
+  --c-soft: #F4F6FA;
+  --c-white: #FFFFFF;
+  --c-accent: #F26A1B;
+  --c-accent-dark: #B4470C;
+  --c-accent-light: #FDE9DC;
+
+  --f-display: 'Bricolage Grotesque Variable', 'Bricolage Grotesque', sans-serif;
+  --f-body: 'Inter Variable', Inter, system-ui, sans-serif;
+
+  /* Header nel flusso: 14px sopra + barra (10 + 48 + 10). L'hero ne tiene conto. */
+  --header-h: 82px;
+
+  --ease-bounce: cubic-bezier(.34, 1.35, .64, 1);
+  --ease-name: cubic-bezier(.34, 1.2, .64, 1);
+}

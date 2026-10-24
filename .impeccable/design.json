@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-24T00:00:00Z",
+  "title": "Design System: Portfolio · Mariano De Magistris",
+  "extensions": {
+    "shadows": [
+      { "name": "header", "value": "0 6px 20px rgba(20,33,61,0.08)", "purpose": "Pillola dell'header, con backdrop-filter: blur(10px)." },
+      { "name": "board", "value": "0 30px 70px rgba(0,0,0,0.3)", "purpose": "Dashboard del caso studio sul blu notte." },
+      { "name": "tip", "value": "0 10px 24px rgba(20,33,61,0.25)", "purpose": "Nuvolette dei mattoncini e fumetti del caso studio." },
+      { "name": "brick-hover", "value": "0 8px 16px rgba(20,33,61,0.2)", "purpose": "Mattoncino del logo in hover o con focus." }
+    ],
+    "motion": [
+      { "name": "ease-bounce", "value": "cubic-bezier(.34, 1.35, .64, 1)", "purpose": "Mattoncini del logo che escono, 520ms. Dal prototipo approvato." },
+      { "name": "ease-name", "value": "cubic-bezier(.34, 1.2, .64, 1)", "purpose": "Nome nell'header che scivola a destra, 520ms. Dal prototipo approvato." }
+    ],
+    "breakpoints": [
+      { "name": "header-compact", "value": "420px" },
+      { "name": "logo-column", "value": "380px (larghezza della zona del logo, non del viewport)" }
+    ]
+  }
+}
