@@ -29,7 +29,21 @@
 .hero__line--solution { margin-top: 0.06em; }
 .hero__w { display: inline-block; margin: 0 0.12em; }
 .hero__nowrap { display: inline-block; white-space: nowrap; margin-left: 0.04em; }
-.hero__word { display: inline-block; padding: 0.02em 0.16em 0.08em; }
+.hero__word {
+  display: inline-block;
+  padding: 0.02em 0.16em 0.08em;
+  /* Stato fermo (riduci movimento, o prima che parta lo script): l'evidenziatore è già al suo posto. */
+  background: var(--c-accent);
+  border-radius: 14px;
+}
+
+/* Hero animata: titolo, testi e pulsanti entrano secondo la timeline; l'evidenziatore lo disegna il canvas. */
+.hero-pending .hero__word, .hero--live .hero__word { background: transparent; }
+.hero-pending [data-hero-step], .hero--live [data-hero-step]:not(.is-in) { opacity: 0; transform: translateY(18px); }
+.hero-pending .hero__scroll, .hero--live .hero__scroll { transform: none; }
+.hero--live .hero__line { transition: opacity 700ms ease, transform 700ms ease; }
+.hero--live .hero__who, .hero--live .hero__pitch, .hero--live .hero__ctas { transition: opacity 600ms ease, transform 600ms ease; }
+.hero--live .hero__scroll { transition: opacity 800ms ease; }
 
 .hero__who {
   display: flex;
