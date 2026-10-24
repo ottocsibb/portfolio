@@ -1,0 +1,1092 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Portfolio Mariano</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EEF1F6}
+a{color:#14213D}a:hover{color:#B4470C}
+@keyframes rise{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
+@keyframes blink{50%{opacity:.25}}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(242,106,27,.55)}100%{box-shadow:0 0 0 10px rgba(242,106,27,0)}}
+@keyframes bubble{0%{transform:translateY(10px) scale(.9);opacity:0}15%{transform:none;opacity:1}85%{transform:none;opacity:1}100%{transform:translateY(-6px);opacity:0}}
+@media (prefers-reduced-motion: reduce){[style*="animation"]{animation:none!important}}
+.lg-slot{transition:transform 520ms cubic-bezier(.34,1.35,.64,1)}
+.lg-brick{transition:transform 180ms ease, box-shadow 180ms ease}
+.lg-brick:hover,.lg-brick:focus-visible{transform:translateY(-3px);box-shadow:0 8px 16px rgba(20,33,61,0.2)}
+.lg-tip{position:absolute;left:-6px;top:calc(100% + 10px);transform:translate(0,4px);opacity:0;pointer-events:none;transition:opacity 160ms ease, transform 160ms ease;background:#14213D;color:#FFFFFF;border-radius:10px;padding:8px 12px;white-space:nowrap;text-align:left;box-shadow:0 10px 24px rgba(20,33,61,0.25)}
+.lg-tip::before{content:"";position:absolute;left:26px;top:-5px;width:10px;height:10px;margin-left:-5px;background:#14213D;transform:rotate(45deg);border-radius:2px}
+.lg-brick:hover .lg-tip,.lg-brick:focus-visible .lg-tip{opacity:1;transform:translate(0,0)}
+.lg-showtips .lg-tip{left:calc(100% + 12px);top:50%;transform:translate(0,-50%);opacity:1;white-space:normal;width:max-content;max-width:calc(100vw - 130px)}
+.lg-showtips .lg-brick:hover .lg-tip,.lg-showtips .lg-brick:focus-visible .lg-tip{transform:translate(0,-50%)}
+.lg-showtips .lg-tip::before{left:-4px;top:50%;margin:-5px 0 0 0}
+@media (prefers-reduced-motion: reduce){.lg-slot,.lg-brick,.lg-tip{transition:none}}
+section[id]{scroll-margin-top:96px}
+</style>
+</helmet>
+<div style="background: #EEF1F6; color: #14213D; font-family: Inter, system-ui, sans-serif; font-size: 17px; line-height: 1.6; overflow-x: clip">
+
+<header style="position: sticky; top: 0; z-index: 20; padding: 14px 16px 0; pointer-events: none">
+<div style="pointer-events: auto; max-width: 1240px; margin: 0 auto; background: rgba(255,255,255,0.94); backdrop-filter: blur(10px); border-radius: 22px; box-shadow: 0 6px 20px rgba(20,33,61,0.08); padding: 10px 18px">
+<nav aria-label="Principale" style="display: flex; align-items: center; justify-content: space-between; gap: 16px">
+
+<div ref="{{setHdrZone}}" class="{{hdrZoneClass}}" onMouseEnter="{{onHdrEnter}}" onMouseLeave="{{onHdrLeave}}" onFocus="{{onHdrFocusIn}}" onBlur="{{onHdrFocusOut}}" onKeyDown="{{onHdrKey}}" style="position: relative; flex: 1 1 auto; min-width: 0; max-width: 520px; height: 48px">
+<button type="button" ref="{{setHdrTrigger}}" onClick="{{onHdrTrigger}}" aria-expanded="{{hdrExpanded}}" aria-controls="lg-sections" aria-label="Mariano De Magistris, apri le sezioni" style="position: absolute; left: 0; top: 0; height: 48px; width: 300px; max-width: 100%; border: 0; background: transparent; cursor: pointer; padding: 0; z-index: 1"></button>
+<div aria-hidden="true" style="position: absolute; left: 36px; top: 0; height: 48px; display: flex; flex-direction: column; justify-content: center; line-height: 1.15; white-space: nowrap; pointer-events: none; opacity: {{hdrNameO}}; transform: translateX({{hdrNameX}}px); transition: transform 520ms cubic-bezier(.34,1.2,.64,1), opacity 220ms ease">
+<span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 17px">Mariano De Magistris</span>
+<span style="font-size: 12px; font-weight: 600; color: #4A5672">Team leader · Analista funzionale · Developer</span>
+</div>
+<div id="lg-sections" role="group" aria-label="Sezioni" style="position: absolute; left: 0; top: 0; width: 0; height: 0; z-index: 2">
+<sc-for list="{{hdrBricks}}" as="b" hint-placeholder-count="4">
+<div class="lg-slot" style="position: absolute; left: {{b.fx}}px; top: {{b.fy}}px; width: {{b.size}}px; height: {{b.size}}px; transform: translate({{b.tx}}px, {{b.ty}}px) scale({{b.s}}); transition-delay: {{b.delay}}ms">
+<button type="button" class="lg-brick" onClick="{{b.go}}" tabIndex="{{b.tab}}" aria-label="{{b.label}}" aria-current="{{b.current}}" style="position: relative; width: 100%; height: 100%; border: 0; padding: 0; border-radius: 9px; cursor: pointer; pointer-events: {{b.pe}}; background: {{b.bg}}; color: {{b.color}}; display: flex; align-items: center; justify-content: center; outline: {{b.outline}}; outline-offset: 3px">
+<span aria-hidden="true" style="display: inline-flex; opacity: {{b.io}}; transition: opacity 200ms ease; transition-delay: {{b.idelay}}ms">
+<sc-if value="{{b.isCase}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M7 16v-3M12 16V8M17 16v-5"></path></svg></sc-if>
+<sc-if value="{{b.isPath}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="2.5"></circle><circle cx="18" cy="6" r="2.5"></circle><path d="M8.5 18c6 0 1-12 7-12"></path></svg></sc-if>
+<sc-if value="{{b.isProj}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5 9-5z"></path><path d="M3 13l9 5 9-5"></path></svg></sc-if>
+<sc-if value="{{b.isMail}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M4 7l8 6 8-6"></path></svg></sc-if>
+</span>
+<span class="lg-tip" aria-hidden="true"><b style="display: block; font-size: 13px; font-weight: 700">{{b.label}}</b><small style="display: block; font-size: 12px; font-weight: 500; color: #C3CBDA">{{b.desc}}</small></span>
+</button>
+</div>
+</sc-for>
+</div>
+</div>
+
+<div aria-live="polite" style="flex: none; display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #4A5672; white-space: nowrap; opacity: {{hdrStatusO}}; transition: opacity 250ms ease">
+<sc-if value="{{hdrHasCur}}" hint-placeholder-val="{{ false }}">
+<span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 3px; background: {{hdrCurColor}}"></span><span>{{hdrCurLabel}}</span>
+</sc-if>
+<sc-if value="{{hdrNoCur}}" hint-placeholder-val="{{ true }}">
+<span>{{hdrHint}}</span>
+</sc-if>
+</div>
+
+</nav>
+</div>
+</header>
+
+<section id="top" ref="{{setStage}}" onMouseMove="{{onMove}}" onMouseLeave="{{onLeave}}" aria-label="Presentazione" style="position: relative; height: 780px; overflow: hidden">
+
+<div aria-hidden="true" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; z-index: 1">
+<sc-for list="{{cols}}" as="col" hint-placeholder-count="3">
+<div style="position: absolute; left: 0; top: 0; width: {{col.w}}px; height: {{col.h}}px; transform: translate({{col.x}}px, {{col.y}}px); border: 1.5px dashed #C5CCD8; border-radius: 14px; box-sizing: border-box; opacity: {{colOpacity}}; transition: opacity 600ms ease"></div>
+</sc-for>
+<sc-for list="{{pieces}}" as="p" hint-placeholder-count="36">
+<div style="position: absolute; left: 0; top: 0; width: {{p.w}}px; height: {{p.h}}px; border-radius: {{p.br}}; background: {{p.c}}; transform: translate({{p.x}}px, {{p.y}}px) rotate({{p.a}}deg); transition: background-color 450ms ease"></div>
+</sc-for>
+</div>
+
+<div style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; z-index: 2; pointer-events: none; display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 96px 24px 0; text-align: center">
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: clamp(48px, 7vw, 104px); line-height: 0.98; letter-spacing: -0.05em; font-weight: 800">
+<span style="display: block; font-weight: 500; color: #6B7894; opacity: {{w1o}}; transform: translateY({{w1y}}px); transition: opacity 700ms ease, transform 700ms ease"><span style="display: inline-block; margin: 0 0.12em">Dal</span><span style="display: inline-block; margin: 0 0.12em">problema</span></span>
+<span style="display: block; margin-top: 0.06em; opacity: {{w2o}}; transform: translateY({{w2y}}px); transition: opacity 700ms ease, transform 700ms ease"><span style="display: inline-block; margin: 0 0.12em">alla</span><span style="display: inline-block; white-space: nowrap; margin-left: 0.04em"><span ref="{{setWord}}" style="display: inline-block; padding: 0.02em 0.16em 0.08em">soluzione</span>.</span></span>
+</h1>
+<div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 4px 14px; margin-top: 14px; opacity: {{r1o}}; transform: translateY({{r1y}}px); transition: opacity 600ms ease, transform 600ms ease">
+<span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; font-weight: 700; letter-spacing: -0.01em">Mariano De Magistris</span>
+<span style="font-size: 15px; font-weight: 500; color: #4A5672">Team leader · Analista funzionale · Developer</span>
+</div>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 8px; opacity: {{r2o}}; transform: translateY({{r2y}}px); transition: opacity 600ms ease, transform 600ms ease">
+<p style="margin: 0; font-size: 20px; font-weight: 400; color: #14213D; max-width: 640px">Prendo problemi complessi, li scompongo, creo soluzioni.</p>
+<span style="font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #B4470C">Per aziende e progetti privati</span>
+</div>
+<div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; pointer-events: auto; opacity: {{r3o}}; transform: translateY({{r3y}}px); transition: opacity 600ms ease, transform 600ms ease">
+<a href="#caso" style="text-decoration: none; background: #14213D; color: #FFFFFF; padding: 14px 24px; border-radius: 999px; font-weight: 600">Leggi un caso reale</a>
+<a href="#contatti" style="text-decoration: none; background: #FFFFFF; padding: 14px 24px; border-radius: 999px; font-weight: 600">Scarica il CV</a>
+</div>
+</div>
+
+<div style="position: absolute; left: 0; right: 0; bottom: 28px; z-index: 2; display: flex; justify-content: center; pointer-events: none; opacity: {{r4o}}; transition: opacity 800ms ease">
+<span style="font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #4A5672">Scorri ↓</span>
+</div>
+
+<button type="button" onClick="{{onReplay}}" style="position: absolute; right: 24px; bottom: 20px; z-index: 3; border: 1px solid #C5CCD8; cursor: pointer; background: #FFFFFF; color: #14213D; font: inherit; font-size: 14px; font-weight: 600; padding: 10px 16px; border-radius: 999px; min-height: 44px">↺ Rivedi</button>
+</section>
+
+<section id="caso" style="position: relative; background: #14213D; color: #FFFFFF">
+<div ref="{{ov.caso}}" aria-hidden="true" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; z-index: 3; pointer-events: none"><sc-for list="{{tiles.caso}}" as="t" hint-placeholder-count="0"><div style="position: absolute; left: 0; top: 0; width: {{t.w}}px; height: {{t.h}}px; border-radius: 6px; background: {{t.c}}; opacity: {{t.o}}; transform: translate({{t.x}}px, {{t.y}}px) rotate({{t.a}}deg); transition: background-color 400ms ease"></div></sc-for></div>
+<div style="max-width: 1240px; margin: 0 auto; padding: 112px 24px; display: flex; flex-direction: column; gap: 28px">
+<div ref="{{rf.caseHead}}" style="display: flex; flex-direction: column; align-items: center; text-align: center; align-self: center; gap: 14px; max-width: 760px; transform: translate({{asm.caseHead.x}}px, {{asm.caseHead.y}}px) rotate({{asm.caseHead.r}}deg) scale({{asm.caseHead.s}}); opacity: {{asm.caseHead.o}}; filter: grayscale({{asm.caseHead.g}})">
+<div style="font-size: 14px; font-weight: 700; color: {{accent}}; text-transform: uppercase; letter-spacing: 0.08em">Caso studio · mercati energetici</div>
+<h2 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: clamp(36px, 4.4vw, 60px); line-height: 1.02; letter-spacing: -0.03em; font-weight: 800">Una dashboard per sapere sempre cosa sta succedendo</h2>
+<p style="margin: 0; font-size: 18px; color: #C3CBDA">Guarda la differenza tra prima e dopo il progetto.</p>
+</div>
+
+<div style="display: flex; flex-direction: column; align-items: center; gap: 10px">
+<div ref="{{rf.caseCtrl}}" role="group" aria-label="Confronta prima e dopo" style="opacity: {{asm.caseCtrl.o}}; display: inline-flex; background: #1F2E50; border-radius: 999px; padding: 4px; gap: 4px">
+<button type="button" onClick="{{showPrima}}" aria-pressed="{{primaPressed}}" style="border: 0; border-radius: 999px; padding: 10px 26px; min-height: 44px; font: inherit; font-weight: 700; cursor: pointer; background: {{primaBg}}; color: {{primaColor}}; transition: background-color 300ms ease, color 300ms ease">Prima</button>
+<button type="button" onClick="{{showDopo}}" aria-pressed="{{dopoPressed}}" style="border: 0; border-radius: 999px; padding: 10px 26px; min-height: 44px; font: inherit; font-weight: 700; cursor: pointer; background: {{dopoBg}}; color: {{dopoColor}}; transition: background-color 300ms ease, color 300ms ease">Dopo</button>
+</div>
+<div aria-hidden="true" style="width: 200px; height: 3px; border-radius: 2px; background: #2C3E66; overflow: hidden; opacity: {{progVis}}; transition: opacity 400ms ease"><div style="height: 3px; width: {{progW}}%; background: {{accent}}; transition: width 200ms linear"></div></div>
+</div>
+
+<div ref="{{rf.caseBoard}}" style="opacity: {{asm.caseBoard.o}}; width: 100%; max-width: 1080px; align-self: center; box-sizing: border-box; background: #FFFFFF; color: #14213D; border-radius: 20px; overflow: hidden; box-shadow: 0 30px 70px rgba(0,0,0,0.3)">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; padding: 12px 18px; background: #F4F6FA; border-bottom: 1px solid #DDE2EC">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+<span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 50%; background: #C5CCD8"></span>
+<span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 50%; background: #C5CCD8"></span>
+<span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 50%; background: #C5CCD8"></span>
+<span style="margin-left: 8px; font-size: 14px; font-weight: 700">Controllo mercati energetici</span>
+<span style="font-size: 12px; font-weight: 600; color: #4A5672">· demo, dati simulati</span>
+</div>
+<sc-if value="{{isDopo}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: #B4470C"><span aria-hidden="true" style="width: 9px; height: 9px; border-radius: 50%; background: {{accent}}; animation: pulse 1.4s ease-out infinite"></span>LIVE · 4 mercati · {{simClock}}</div>
+</sc-if>
+<sc-if value="{{isPrima}}" hint-placeholder-val="{{ true }}">
+<div style="font-size: 13px; font-weight: 700; color: #4A5672">Nessuna vista d’insieme</div>
+</sc-if>
+</div>
+
+<div style="position: relative; min-height: 500px; padding: 18px; background: #EEF1F6">
+
+<sc-if value="{{isPrima}}" hint-placeholder-val="{{ true }}">
+<div style="position: relative; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px">
+<sc-for list="{{silos}}" as="g" hint-placeholder-count="4">
+<div style="background: #FFFFFF; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 8px; filter: grayscale(1); animation: rise 450ms ease both; animation-delay: {{g.d}}ms">
+<div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px"><span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 18px; font-weight: 800; color: #4A5672">{{g.name}}</span><span style="font-size: 11px; font-weight: 600; color: #4A5672">{{g.src}}</span></div>
+<sc-for list="{{g.tasks}}" as="k" hint-placeholder-count="3">
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; background: #F4F6FA; border-radius: 8px; padding: 8px 10px; font-size: 14px">{{k.n}}<span style="flex: none; width: 20px; height: 20px; border-radius: 50%; background: #C5CCD8; font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; animation: blink 1.6s ease-in-out infinite; animation-delay: {{k.d}}ms">?</span></div>
+</sc-for>
+</div>
+</sc-for>
+<sc-for list="{{bubbles}}" as="b" hint-placeholder-count="4">
+<div style="position: absolute; left: {{b.l}}%; top: {{b.t}}%; max-width: 260px; background: #14213D; color: #FFFFFF; border-radius: 14px 14px 14px 4px; padding: 10px 14px; font-size: 14px; font-weight: 500; box-shadow: 0 10px 24px rgba(20,33,61,0.25); animation: bubble 6s ease-in-out infinite; animation-delay: {{b.d}}ms">{{b.text}}</div>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{isDopo}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 12px">
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px">
+<sc-for list="{{markets}}" as="m" hint-placeholder-count="4">
+<button type="button" onClick="{{m.pick}}" aria-pressed="{{m.pressed}}" style="text-align: left; border: 2px solid {{m.border}}; background: #FFFFFF; border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; font: inherit; color: inherit; cursor: pointer; transition: border-color 300ms ease; animation: rise 450ms ease both; animation-delay: {{m.d}}ms">
+<span style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
+<span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; line-height: 1; font-weight: 800">{{m.id}}</span>
+<span style="font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: {{m.pillBg}}; color: {{m.pillColor}}; transition: background-color 400ms ease, color 400ms ease">{{m.status}}</span>
+</span>
+<span style="font-size: 13px; color: #4A5672">{{m.name}}</span>
+<span style="font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums">{{m.timer}}</span>
+<span aria-hidden="true" style="display: block; height: 4px; background: #DDE2EC; border-radius: 2px; overflow: hidden"><span style="display: block; height: 4px; width: {{m.sess}}%; background: {{m.barC}}; transition: width 800ms linear"></span></span>
+<span style="font-size: 12px; color: #4A5672"><b style="color: #14213D">{{m.done}}</b> task eseguiti oggi</span>
+</button>
+</sc-for>
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 12px">
+<div style="flex: 2 1 460px; min-width: 0; background: #FFFFFF; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px; animation: rise 500ms ease both; animation-delay: 300ms">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px">
+<span style="font-size: 13px; font-weight: 700">Task · {{filterLabel}}</span>
+<sc-if value="{{filtered}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{showAll}}" style="border: 1px solid #C5CCD8; background: #FFFFFF; color: #14213D; font: inherit; font-size: 12px; font-weight: 600; border-radius: 999px; padding: 6px 12px; min-height: 32px; cursor: pointer">Mostra tutti i mercati</button></sc-if>
+</div>
+<div style="display: flex; gap: 10px; overflow-x: auto">
+<div style="flex: 1 0 150px; min-width: 0; display: flex; flex-direction: column; gap: 8px">
+<div style="font-size: 13px; font-weight: 700; color: #4A5672">In coda</div>
+<sc-for list="{{simQueue}}" as="k" hint-placeholder-count="3"><div style="background: #EEF1F6; border-radius: 8px; padding: 8px 10px; font-size: 13px; display: flex; gap: 6px; align-items: baseline; animation: rise 400ms ease both"><span style="flex: none; font-size: 10px; font-weight: 800; border: 1px solid #2C3E66; border-radius: 4px; padding: 0 4px">{{k.mkt}}</span><span style="min-width: 0">{{k.name}}</span></div></sc-for>
+<sc-if value="{{qEmpty}}" hint-placeholder-val="{{ false }}"><div style="font-size: 13px; color: #4A5672">Nessun task</div></sc-if>
+</div>
+<div style="flex: 1 0 150px; min-width: 0; display: flex; flex-direction: column; gap: 8px">
+<div style="font-size: 13px; font-weight: 700; color: #2C3E66">In esecuzione</div>
+<sc-for list="{{simRun}}" as="k" hint-placeholder-count="3"><div style="background: #FFFFFF; border: 1.5px solid #2C3E66; border-radius: 8px; padding: 8px 10px; font-size: 13px; display: flex; flex-direction: column; gap: 6px"><span style="display: flex; gap: 6px; align-items: baseline"><span style="flex: none; font-size: 10px; font-weight: 800; border: 1px solid #2C3E66; border-radius: 4px; padding: 0 4px">{{k.mkt}}</span><span style="min-width: 0">{{k.name}}</span></span><div aria-hidden="true" style="height: 5px; background: #DDE2EC; border-radius: 3px; overflow: hidden"><div style="height: 5px; width: {{k.p}}%; background: #2C3E66; transition: width 700ms ease"></div></div></div></sc-for>
+<sc-if value="{{rEmpty}}" hint-placeholder-val="{{ false }}"><div style="font-size: 13px; color: #4A5672">Nessun task</div></sc-if>
+</div>
+<div style="flex: 1 0 150px; min-width: 0; display: flex; flex-direction: column; gap: 8px">
+<div style="font-size: 13px; font-weight: 700; color: #B4470C">Eseguiti</div>
+<sc-for list="{{simDone}}" as="k" hint-placeholder-count="3"><div style="background: {{k.bg}}; border-radius: 8px; padding: 8px 10px; font-size: 13px; display: flex; gap: 6px; align-items: baseline; transition: background-color 900ms ease"><span style="flex: none; font-size: 10px; font-weight: 800; border: 1px solid #2C3E66; border-radius: 4px; padding: 0 4px">{{k.mkt}}</span><span style="min-width: 0">✓ {{k.name}}</span></div></sc-for>
+<sc-if value="{{dEmpty}}" hint-placeholder-val="{{ false }}"><div style="font-size: 13px; color: #4A5672">Nessun task</div></sc-if>
+</div>
+</div>
+</div>
+
+<div style="flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; gap: 12px; animation: rise 500ms ease both; animation-delay: 450ms">
+<div style="background: #FFFFFF; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 6px">
+<div style="font-size: 13px; font-weight: 700; color: #4A5672">Eventi</div>
+<sc-for list="{{simLog}}" as="e" hint-placeholder-count="6">
+<div style="display: flex; gap: 8px; align-items: baseline; font-size: 12.5px; padding: 5px 8px; border-radius: 6px; background: {{e.bg}}; transition: background-color 900ms ease"><span style="flex: none; font-variant-numeric: tabular-nums; color: #4A5672; font-weight: 600">{{e.time}}</span><span style="flex: none; font-size: 10px; font-weight: 800; border: 1px solid #2C3E66; border-radius: 4px; padding: 0 4px">{{e.mkt}}</span><span style="min-width: 0">{{e.text}}</span></div>
+</sc-for>
+</div>
+<div style="background: #FFFFFF; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 8px">
+<div style="font-size: 13px; font-weight: 700; color: #4A5672">Task completati nel tempo</div>
+<div aria-hidden="true" style="height: 64px; display: flex; align-items: flex-end; gap: 4px">
+<sc-for list="{{simBars}}" as="v" hint-placeholder-count="14"><div style="flex: 1; height: {{v.h}}%; background: {{v.c}}; border-radius: 3px 3px 0 0; transition: height 600ms ease"></div></sc-for>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</sc-if>
+
+</div>
+</div>
+
+<p ref="{{rf.caseCap}}" aria-live="polite" style="opacity: {{asm.caseCap.o}}; margin: 0 auto; max-width: 700px; text-align: center; font-size: 16px; color: #C3CBDA">{{caseCaption}}</p>
+</div>
+</section>
+
+<section id="percorso" style="position: relative; max-width: 1240px; margin: 0 auto; padding: 112px 24px 0; display: flex; flex-direction: column; gap: 32px">
+<div ref="{{ov.perc}}" aria-hidden="true" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; z-index: 3; pointer-events: none"><sc-for list="{{tiles.perc}}" as="t" hint-placeholder-count="0"><div style="position: absolute; left: 0; top: 0; width: {{t.w}}px; height: {{t.h}}px; border-radius: 6px; background: {{t.c}}; opacity: {{t.o}}; transform: translate({{t.x}}px, {{t.y}}px) rotate({{t.a}}deg); transition: background-color 400ms ease"></div></sc-for></div>
+<div ref="{{rf.percHead}}" style="display: flex; flex-direction: column; gap: 12px; max-width: 760px; opacity: {{asm.percHead.o}}">
+<div style="font-size: 14px; font-weight: 700; color: #B4470C; text-transform: uppercase; letter-spacing: 0.08em">Percorso</div>
+<h2 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: clamp(36px, 4.4vw, 60px); line-height: 1.02; letter-spacing: -0.03em; font-weight: 800">Dal codice alla guida dei progetti</h2>
+<p style="margin: 0; font-size: 18px; color: #4A5672">Sei anni in cui ogni ruolo ha aggiunto responsabilità senza toglierne: oggi seguo il cliente, guido il team e continuo a scrivere codice.</p>
+</div>
+<ol style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px">
+<li ref="{{rf.t1}}" style="min-width: 0; background: #FFFFFF; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; gap: 8px; opacity: {{asm.t1.o}}">
+<div style="font-size: 13px; font-weight: 700; color: #4A5672">2020 – 2022 · Matrix Consulting Group</div>
+<h3 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; line-height: 1.15">Sviluppatore web</h3>
+<p style="margin: 0; color: #4A5672; font-size: 15px">Le basi: web application a microservizi in Java e Python, database Oracle e i primi rilasci in collaudo e produzione.</p>
+</li>
+<li ref="{{rf.t2}}" style="min-width: 0; background: #FFFFFF; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; gap: 8px; opacity: {{asm.t2.o}}">
+<div style="font-size: 13px; font-weight: 700; color: #4A5672">2022 – 2023 · Matrix Consulting Group</div>
+<h3 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; line-height: 1.15">Senior Backend Developer</h3>
+<p style="margin: 0; color: #4A5672; font-size: 15px">Più autonomia tecnica: architettura con Spring Boot, batch e code Kafka, reperibilità 24/7 e analisi tecnica nelle gare d'appalto.</p>
+</li>
+<li ref="{{rf.t3}}" style="min-width: 0; background: #FFFFFF; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; gap: 8px; opacity: {{asm.t3.o}}">
+<div style="font-size: 13px; font-weight: 700; color: #4A5672">2023 – 2025 · Matrix Consulting Group</div>
+<h3 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; line-height: 1.15">Task manager</h3>
+<p style="margin: 0; color: #4A5672; font-size: 15px">Il passo verso la gestione: rapporto con il cliente, stime di effort, responsabilità dei rilasci e guida dei junior.</p>
+</li>
+<li ref="{{rf.t4}}" style="min-width: 0; background: #14213D; color: #FFFFFF; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; gap: 8px; opacity: {{asm.t4.o}}">
+<div style="font-size: 13px; font-weight: 700; color: {{accent}}">Dal 2025 · Mediacom</div>
+<h3 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; line-height: 1.15">Task Manager · Analyst · Senior BE Developer</h3>
+<p style="margin: 0; color: #C3CBDA; font-size: 15px">Tutto il percorso in un unico ruolo, dall'analisi al rilascio in produzione:</p>
+<ul style="margin: 0; padding: 0 0 0 18px; color: #FFFFFF; font-size: 15px; display: flex; flex-direction: column; gap: 2px">
+<li>Rapporto con il cliente, tempi e rilasci</li>
+<li>Analisi, definizione e stima dei task</li>
+<li>Guida del team</li>
+<li>Sviluppo backend e microfrontend</li>
+</ul>
+</li>
+</ol>
+<div ref="{{rf.skills}}" style="display: flex; flex-wrap: wrap; gap: 8px; font-size: 14px; font-weight: 600; opacity: {{asm.skills.o}}">
+<span style="background: #FFFFFF; border-radius: 999px; padding: 6px 14px">Java</span>
+<span style="background: #FFFFFF; border-radius: 999px; padding: 6px 14px">Spring Boot</span>
+<span style="background: #FFFFFF; border-radius: 999px; padding: 6px 14px">Spring Batch</span>
+<span style="background: #FFFFFF; border-radius: 999px; padding: 6px 14px">Kafka</span>
+<span style="background: #FFFFFF; border-radius: 999px; padding: 6px 14px">Python</span>
+<span style="background: #FFFFFF; border-radius: 999px; padding: 6px 14px">Flask</span>
+<span style="background: #FFFFFF; border-radius: 999px; padding: 6px 14px">Pandas</span>
+<span style="background: #FFFFFF; border-radius: 999px; padding: 6px 14px">Oracle</span>
+<span style="background: #FFFFFF; border-radius: 999px; padding: 6px 14px">PostgreSQL</span>
+<span style="background: #FFFFFF; border-radius: 999px; padding: 6px 14px">MongoDB</span>
+<span style="background: #FFFFFF; border-radius: 999px; padding: 6px 14px">Azure DevOps</span>
+<span style="background: #FFFFFF; border-radius: 999px; padding: 6px 14px">Claude Code</span>
+</div>
+</section>
+
+<section id="progetti" style="position: relative; max-width: 1240px; margin: 0 auto; padding: 112px 24px 64px; display: flex; flex-direction: column; gap: 32px">
+<div ref="{{ov.prog}}" aria-hidden="true" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; z-index: 3; pointer-events: none"><sc-for list="{{tiles.prog}}" as="t" hint-placeholder-count="0"><div style="position: absolute; left: 0; top: 0; width: {{t.w}}px; height: {{t.h}}px; border-radius: 6px; background: {{t.c}}; opacity: {{t.o}}; transform: translate({{t.x}}px, {{t.y}}px) rotate({{t.a}}deg); transition: background-color 400ms ease"></div></sc-for></div>
+<h2 ref="{{rf.projHead}}" style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: clamp(36px, 4.4vw, 60px); line-height: 1.02; letter-spacing: -0.03em; font-weight: 800; transform: translate({{asm.projHead.x}}px, {{asm.projHead.y}}px) rotate({{asm.projHead.r}}deg) scale({{asm.projHead.s}}); opacity: {{asm.projHead.o}}; filter: grayscale({{asm.projHead.g}})">Altri progetti</h2>
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px">
+<article ref="{{rf.p1}}" style="flex: 1 1 260px; min-width: 0; background: #FFFFFF; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; gap: 10px; transform: translate({{asm.p1.x}}px, {{asm.p1.y}}px) rotate({{asm.p1.r}}deg) scale({{asm.p1.s}}); opacity: {{asm.p1.o}}; filter: grayscale({{asm.p1.g}})">
+<div style="font-size: 13px; font-weight: 700; color: #4A5672">Cliente</div>
+<h3 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; line-height: 1.15">Classificazione email con LLM</h3>
+<p style="margin: 0; color: #4A5672; font-size: 16px">Smistamento automatico della posta in arrivo.</p>
+</article>
+<article ref="{{rf.p2}}" style="flex: 1 1 260px; min-width: 0; background: #FFFFFF; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; gap: 10px; transform: translate({{asm.p2.x}}px, {{asm.p2.y}}px) rotate({{asm.p2.r}}deg) scale({{asm.p2.s}}); opacity: {{asm.p2.o}}; filter: grayscale({{asm.p2.g}})">
+<div style="font-size: 13px; font-weight: 700; color: #4A5672">Cliente</div>
+<h3 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; line-height: 1.15">Clustering semantico dei feedback</h3>
+<p style="margin: 0; color: #4A5672; font-size: 16px">Raggruppa per significato i feedback degli operatori di un servizio idrico, con test A/B tra modelli di embedding ed export dei temi in Jira. Python, Streamlit, MongoDB.</p>
+</article>
+<article ref="{{rf.p3}}" style="flex: 1 1 260px; min-width: 0; background: #FFFFFF; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; gap: 10px; transform: translate({{asm.p3.x}}px, {{asm.p3.y}}px) rotate({{asm.p3.r}}deg) scale({{asm.p3.s}}); opacity: {{asm.p3.o}}; filter: grayscale({{asm.p3.g}})">
+<div style="font-size: 13px; font-weight: 700; color: #B4470C">Personale</div>
+<h3 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; line-height: 1.15">Gestionale del personale</h3>
+<p style="margin: 0; color: #4A5672; font-size: 16px">Anagrafica dei dipendenti con commesse, timesheet settimanali, approvazioni per i manager e grafici su ore e costi. React, Fastify, Prisma, PostgreSQL.</p>
+</article>
+<article ref="{{rf.p4}}" style="flex: 1 1 260px; min-width: 0; background: #FFFFFF; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; gap: 10px; transform: translate({{asm.p4.x}}px, {{asm.p4.y}}px) rotate({{asm.p4.r}}deg) scale({{asm.p4.s}}); opacity: {{asm.p4.o}}; filter: grayscale({{asm.p4.g}})">
+<div style="font-size: 13px; font-weight: 700; color: #B4470C">Personale</div>
+<h3 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; line-height: 1.15">Classificatore semantico con LLM</h3>
+<p style="margin: 0; color: #4A5672; font-size: 16px">Un knowledge graph 3D che collega note e parole per significato: embedding, comunità semantiche e spiegazioni in linguaggio naturale con LLM locali. React Three Fiber, pgvector, Ollama.</p>
+</article>
+</div>
+</section>
+
+<section id="servizi" style="position: relative; max-width: 1240px; margin: 0 auto; padding: 32px 24px 96px">
+<div ref="{{ov.serv}}" aria-hidden="true" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; z-index: 3; pointer-events: none"><sc-for list="{{tiles.serv}}" as="t" hint-placeholder-count="0"><div style="position: absolute; left: 0; top: 0; width: {{t.w}}px; height: {{t.h}}px; border-radius: 6px; background: {{t.c}}; opacity: {{t.o}}; transform: translate({{t.x}}px, {{t.y}}px) rotate({{t.a}}deg); transition: background-color 400ms ease"></div></sc-for></div>
+<div style="background: #FFFFFF; border-radius: 28px; padding: 48px; display: flex; flex-wrap: wrap; gap: 40px">
+<div ref="{{rf.servHead}}" style="flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 12px; transform: translate({{asm.servHead.x}}px, {{asm.servHead.y}}px) rotate({{asm.servHead.r}}deg) scale({{asm.servHead.s}}); opacity: {{asm.servHead.o}}; filter: grayscale({{asm.servHead.g}})">
+<h2 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: clamp(32px, 3.6vw, 48px); line-height: 1.05; letter-spacing: -0.03em; font-weight: 800">Per aziende e progetti privati</h2>
+<p style="margin: 0; color: #4A5672">Seguo tutto il processo, o entro dove il progetto si è fermato.</p>
+</div>
+<div style="flex: 2 1 480px; min-width: 0; display: flex; flex-wrap: wrap; gap: 12px">
+<div ref="{{rf.s1}}" style="min-width: 0; background: #EEF1F6; border-radius: 16px; padding: 20px; transform: translate({{asm.s1.x}}px, {{asm.s1.y}}px) rotate({{asm.s1.r}}deg) scale({{asm.s1.s}}); opacity: {{asm.s1.o}}; filter: grayscale({{asm.s1.g}})"><div style="font-weight: 700">Guida del team</div><div style="color: #4A5672; font-size: 15px">Task, priorità, avanzamento visibile.</div></div>
+<div ref="{{rf.s2}}" style="min-width: 0; background: #EEF1F6; border-radius: 16px; padding: 20px; transform: translate({{asm.s2.x}}px, {{asm.s2.y}}px) rotate({{asm.s2.r}}deg) scale({{asm.s2.s}}); opacity: {{asm.s2.o}}; filter: grayscale({{asm.s2.g}})"><div style="font-weight: 700">Analisi funzionale</div><div style="color: #4A5672; font-size: 15px">Requisiti chiari prima del codice.</div></div>
+<div ref="{{rf.s3}}" style="min-width: 0; background: #EEF1F6; border-radius: 16px; padding: 20px; transform: translate({{asm.s3.x}}px, {{asm.s3.y}}px) rotate({{asm.s3.r}}deg) scale({{asm.s3.s}}); opacity: {{asm.s3.o}}; filter: grayscale({{asm.s3.g}})"><div style="font-weight: 700">Sviluppo backend e AI</div><div style="color: #4A5672; font-size: 15px">Pipeline, LLM, automazioni.</div></div>
+<div ref="{{rf.s4}}" style="min-width: 0; background: #EEF1F6; border-radius: 16px; padding: 20px; transform: translate({{asm.s4.x}}px, {{asm.s4.y}}px) rotate({{asm.s4.r}}deg) scale({{asm.s4.s}}); opacity: {{asm.s4.o}}; filter: grayscale({{asm.s4.g}})"><div style="font-weight: 700">Consegna completa</div><div style="color: #4A5672; font-size: 15px">Test, documentazione, rilascio.</div></div>
+</div>
+</div>
+</section>
+
+<section id="contatti" style="position: relative; max-width: 1240px; margin: 0 auto; padding: 0 24px 48px">
+<div ref="{{ov.cont}}" aria-hidden="true" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; z-index: 3; pointer-events: none"><sc-for list="{{tiles.cont}}" as="t" hint-placeholder-count="0"><div style="position: absolute; left: 0; top: 0; width: {{t.w}}px; height: {{t.h}}px; border-radius: 6px; background: {{t.c}}; opacity: {{t.o}}; transform: translate({{t.x}}px, {{t.y}}px) rotate({{t.a}}deg); transition: background-color 400ms ease"></div></sc-for></div>
+<div ref="{{rf.contBox}}" style="background: {{accent}}; border-radius: 28px; padding: 72px 48px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 32px; transform: translate({{asm.contBox.x}}px, {{asm.contBox.y}}px) rotate({{asm.contBox.r}}deg) scale({{asm.contBox.s}}); opacity: {{asm.contBox.o}}; filter: grayscale({{asm.contBox.g}})">
+<div style="display: flex; flex-direction: column; gap: 16px; max-width: 760px">
+<h2 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: clamp(40px, 5.4vw, 76px); line-height: 0.98; letter-spacing: -0.035em; font-weight: 800">Hai un'idea e non sai come realizzarla?</h2>
+<p style="margin: 0; font-size: 20px; font-weight: 500">Parliamone.</p>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 12px">
+<a href="mailto:mariano_demagistris@hotmail.it" style="text-decoration: none; background: #14213D; color: #FFFFFF; padding: 14px 24px; border-radius: 999px; font-weight: 600">Raccontamelo</a>
+<a href="#contatti" style="text-decoration: none; background: #FFFFFF; padding: 14px 24px; border-radius: 999px; font-weight: 600">LinkedIn</a>
+<a href="#contatti" style="text-decoration: none; background: #FFFFFF; padding: 14px 24px; border-radius: 999px; font-weight: 600">GitHub</a>
+</div>
+</div>
+<footer style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding: 24px 4px 0; font-size: 14px; color: #4A5672">
+<span>© 2026 Mariano De Magistris</span>
+<span>Dal problema alla soluzione.</span>
+</footer>
+</section>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#F26A1B","options":["#F26A1B","#FACC15","#5EEAD4","#A3E635"]},"speed":{"editor":"range","default":1,"min":0.5,"max":2,"step":0.1,"unit":"×"},"$preview":{"width":1440,"height":4300}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.N = 36;
+    this.W = 1440;
+    this.H = 780;
+    this.mx = -9999;
+    this.my = -9999;
+    this.tt = 0;
+    this.start = 0;
+    this.last = 0;
+    this.reduce = false;
+    this.wr = null;
+    this.idle = false;
+    this.T = { pile: 2600, lanes: 3400, close: 4100, step: 45, rect: 5500, mark: 6300, text1: 900, text2: 3400, r1: 6900, r2: 7150, r3: 7400, r4: 7900 };
+    var s = 11;
+    function rnd() { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; }
+    var grays = ['#C5CCD8', '#A3ADBF', '#7D889C', '#5B6880', '#8E99AD'];
+    this.seeds = [];
+    for (var i = 0; i < this.N; i++) {
+      this.seeds.push({
+        fx: 0.08 + rnd() * 0.84,
+        w: 14 + rnd() * 50, h: 10 + rnd() * 34,
+        round: rnd() < 0.25,
+        a: (rnd() - 0.5) * 80,
+        spin: (rnd() - 0.5) * 360,
+        v0: 120 + rnd() * 260,
+        c: grays[Math.floor(rnd() * grays.length)],
+        spawn: 2000 * Math.sqrt(i / this.N)
+      });
+    }
+    var order = [];
+    for (var j = 0; j < 28; j++) order.push(j);
+    for (var k = 27; k > 0; k--) { var r = Math.floor(rnd() * (k + 1)); var tmp = order[k]; order[k] = order[r]; order[r] = tmp; }
+    this.rank = {};
+    for (var m = 0; m < 28; m++) this.rank[order[m]] = m;
+    this.pcs = [];
+    this.resetPieces();
+    this.asmDef = {
+      caseHead: ['caso', '#2C3E66', 0], caseCtrl: ['caso', '#2C3E66', 0.05], caseBoard: ['caso', '#FFFFFF', 0.1], caseCap: ['caso', '#2C3E66', 0.15],
+      percHead: ['perc', '#14213D', 0], t1: ['perc', '#FFFFFF', 0], t2: ['perc', '#FFFFFF', 0.08], t3: ['perc', '#FFFFFF', 0.16], t4: ['perc', '#14213D', 0.24], skills: ['perc', '#C5CCD8', 0],
+      projHead: ['prog', '#14213D', 0], p1: ['prog', '#FFFFFF', 0], p2: ['prog', '#FFFFFF', 0.08], p3: ['prog', '#FFFFFF', 0.16], p4: ['prog', '#FFFFFF', 0.24],
+      servHead: ['serv', '#14213D', 0], s1: ['serv', '#DDE2EC', 0], s2: ['serv', '#DDE2EC', 0.08], s3: ['serv', '#DDE2EC', 0.16], s4: ['serv', '#DDE2EC', 0.24],
+      contBox: ['cont', 'ACCENT', 0]
+    };
+    this.tileSeed = {};
+    for (var key in this.asmDef) {
+      var ts = [];
+      for (var ti = 0; ti < 24; ti++) ts.push({ dx: (rnd() - 0.5) * 640, dy: 180 + rnd() * 320, rot: (rnd() - 0.5) * 70, lag: rnd() });
+      this.tileSeed[key] = ts;
+    }
+    this.els = {};
+    this.ovs = {};
+    this.rects = {};
+    this.prog = {};
+    this.rf = {};
+    this.ov = {};
+    for (var k2 in this.asmDef) {
+      this.prog[k2] = 1;
+      this.rf[k2] = ((kk) => (el) => { this.els[kk] = el; })(k2);
+    }
+    ['caso', 'perc', 'prog', 'serv', 'cont'].forEach((sk) => { this.ov[sk] = (el) => { this.ovs[sk] = el; }; });
+    this.state = { tick: 0, view: 'prima', autoCase: true, filter: 'all', simTick: 0, hdrOpen: false, hdrEver: false, hdrNarrow: false, navActive: '' };
+    this.setStage = (el) => { this.stageEl = el; };
+    this.setWord = (el) => { this.wordEl = el; };
+    this.onMove = (e) => {
+      if (this.reduce || !this.stageEl) return;
+      var rc = this.stageEl.getBoundingClientRect();
+      this.mx = e.clientX - rc.left;
+      this.my = e.clientY - rc.top;
+    };
+    this.onLeave = () => { this.mx = -9999; this.my = -9999; };
+    this.onReplay = () => {
+      if (this.reduce) return;
+      this.resetPieces();
+      this.start = performance.now();
+      this.last = this.start;
+    };
+    this.PRIMA_MS = 5000;
+    this.mk = [
+      { id: 'MGP', name: 'Mercato del giorno prima', cycle: 3600, off: 2400, tasks: ['Calcolo fabbisogno', 'Previsione dei consumi', 'Invio offerte', 'Acquisizione esiti'] },
+      { id: 'MI', name: 'Mercato infragiornaliero', cycle: 1800, off: 300, tasks: ['Ricalcolo fabbisogno', 'Invio offerte', 'Acquisizione esiti'] },
+      { id: 'MSD', name: 'Servizi di dispacciamento', cycle: 2700, off: 1500, tasks: ['Offerte di riserva', 'Verifica ordini', 'Acquisizione esiti'] },
+      { id: 'GAS', name: 'Gas, giorno prima', cycle: 3000, off: 900, tasks: ['Calcolo fabbisogno gas', 'Nomine', 'Acquisizione prezzi'] }
+    ];
+    this.primaMs = 0;
+    this.autoSwitched = false;
+    this.caseVis = false;
+    this.caseGone = true;
+    this.showPrima = () => { this.autoSwitched = false; this.setState({ view: 'prima', autoCase: false }); };
+    this.showDopo = () => { this.autoSwitched = false; this.setState({ view: 'dopo', autoCase: false }); };
+    this.showAll = () => this.setState({ filter: 'all' });
+    this.pickFns = {};
+    this.mk.forEach((m) => { this.pickFns[m.id] = () => this.setState({ filter: this.state.filter === m.id ? 'all' : m.id }); });
+    this.initSim();
+    this.hdrKeys = ['caso', 'percorso', 'progetti', 'contatti'];
+    this.hdrLabels = ['Caso studio', 'Percorso', 'Progetti', 'Scrivimi'];
+    this.hdrDesc = ['La dashboard dei mercati energetici', 'Sei anni, quattro ruoli', 'Cosa ho costruito', 'Parliamo del tuo progetto'];
+    this.navOrder = ['caso', 'percorso', 'progetti', 'servizi', 'contatti'];
+    this.navNames = { caso: 'Caso studio', percorso: 'Percorso', progetti: 'Progetti', servizi: 'Servizi', contatti: 'Contatti' };
+    this.navPassed = {};
+    this.hdrOpenedAt = 0;
+    this.setHdrZone = (el) => { this.hdrZone = el; };
+    this.setHdrTrigger = (el) => { this.hdrTrigger = el; };
+    this.hdrOpen = () => {
+      clearTimeout(this.hdrCloseT);
+      if (!this.state.hdrOpen) { this.hdrOpenedAt = Date.now(); this.setState({ hdrOpen: true, hdrEver: true }); }
+    };
+    this.hdrClose = () => { clearTimeout(this.hdrCloseT); if (this.state.hdrOpen) this.setState({ hdrOpen: false }); };
+    this.onHdrEnter = () => this.hdrOpen();
+    this.onHdrLeave = () => { clearTimeout(this.hdrCloseT); this.hdrCloseT = setTimeout(this.hdrClose, 350); };
+    this.onHdrFocusIn = () => this.hdrOpen();
+    this.onHdrFocusOut = () => {
+      setTimeout(() => { if (this.hdrZone && !this.hdrZone.contains(document.activeElement)) this.hdrClose(); }, 0);
+    };
+    this.onHdrKey = (e) => {
+      if (e.key === 'Escape' && this.state.hdrOpen) { e.preventDefault(); this.hdrClose(); if (this.hdrTrigger) this.hdrTrigger.focus(); }
+    };
+    this.onHdrTrigger = () => {
+      if (!this.state.hdrOpen) this.hdrOpen();
+      else if (Date.now() - this.hdrOpenedAt > 450) this.hdrClose();
+    };
+    this.hdrGoFns = {};
+    this.hdrKeys.forEach((k) => {
+      this.hdrGoFns[k] = () => {
+        this.hdrClose();
+        var el = document.getElementById(k);
+        if (el) el.scrollIntoView({ behavior: this.reduce ? 'auto' : 'smooth', block: 'start' });
+      };
+    });
+    this.onHdrResize = () => this.updateNav();
+    this.onWinScroll = () => this.updateNav();
+  }
+
+  initSim() {
+    this.uid = 0;
+    this.mi = 0;
+    this.ti = {};
+    this.simSec = 9 * 3600 + 12 * 60;
+    this.doneBy = { MGP: 41, MI: 63, MSD: 27, GAS: 35 };
+    this.sQueue = [];
+    this.sRun = [];
+    this.sDone = [];
+    for (var a = 0; a < 6; a++) this.sQueue.push(this.newTask());
+    for (var b = 0; b < 3; b++) { var t = this.sQueue.shift(); t.p = 15 + b * 25; this.sRun.push(t); }
+    for (var c = 0; c < 3; c++) { var d = this.newTask(); this.sDone.push(d); }
+    this.sLog = [];
+    this.addLog(this.sDone[0].mkt, this.sDone[0].name + ' · completato');
+    this.addLog(this.sRun[0].mkt, this.sRun[0].name + ' · avviato');
+    this.addLog(this.sRun[1].mkt, this.sRun[1].name + ' · avviato');
+    this.sBars = [];
+    for (var e = 0; e < 14; e++) this.sBars.push(4 + Math.round(Math.random() * 6));
+    this.simN = 0;
+    this.recent = 0;
+    this.lastStatus = {};
+    this.mk.forEach((m) => { this.lastStatus[m.id] = this.mStatus(m).status; });
+  }
+
+  newTask() {
+    var m = this.mk[this.mi % this.mk.length];
+    this.mi++;
+    var n = this.ti[m.id] || 0;
+    this.ti[m.id] = n + 1;
+    this.uid++;
+    return { id: this.uid, mkt: m.id, name: m.tasks[n % m.tasks.length], p: 0, fresh: 0 };
+  }
+
+  addLog(mkt, text) {
+    this.sLog.unshift({ time: this.simClockStr(), mkt: mkt, text: text, fresh: 2 });
+    this.sLog = this.sLog.slice(0, 7);
+  }
+
+  mStatus(m) {
+    var ph = (this.simSec + m.off) % m.cycle;
+    var closeAt = Math.round(m.cycle * 0.8);
+    if (ph < closeAt) {
+      var rem = closeAt - ph;
+      return { status: rem < 300 ? 'In chiusura' : 'Aperto', rem: rem, label: 'chiude tra', sess: ph / closeAt };
+    }
+    return { status: 'Esiti in arrivo', rem: m.cycle - ph, label: 'riapre tra', sess: 1 };
+  }
+
+  stepSim() {
+    this.simSec += 13;
+    this.simN++;
+    for (var f = 0; f < this.sLog.length; f++) if (this.sLog[f].fresh) this.sLog[f].fresh--;
+    for (var j = 0; j < this.sDone.length; j++) if (this.sDone[j].fresh) this.sDone[j].fresh--;
+    var still = [];
+    for (var i = 0; i < this.sRun.length; i++) {
+      var t = this.sRun[i];
+      t.p = Math.min(100, t.p + 10 + Math.random() * 20);
+      if (t.p >= 100) {
+        t.fresh = 2;
+        this.sDone.unshift(t);
+        this.doneBy[t.mkt]++;
+        this.recent++;
+        this.addLog(t.mkt, t.name + ' · completato');
+      } else still.push(t);
+    }
+    this.sRun = still;
+    this.sDone = this.sDone.slice(0, 8);
+    while (this.sRun.length < 3 && this.sQueue.length) {
+      var s = this.sQueue.shift();
+      this.sRun.push(s);
+      this.addLog(s.mkt, s.name + ' · avviato');
+    }
+    while (this.sQueue.length < 6) this.sQueue.push(this.newTask());
+    this.mk.forEach((m) => {
+      var st = this.mStatus(m).status;
+      if (st !== this.lastStatus[m.id]) {
+        if (st === 'In chiusura') this.addLog(m.id, 'Sessione in chiusura');
+        if (st === 'Esiti in arrivo') this.addLog(m.id, 'Sessione chiusa, esiti in arrivo');
+        if (st === 'Aperto' && this.lastStatus[m.id] === 'Esiti in arrivo') this.addLog(m.id, 'Nuova sessione aperta');
+        this.lastStatus[m.id] = st;
+      }
+    });
+    if (this.simN % 3 === 0) {
+      this.sBars.push(Math.min(12, 4 + this.recent * 2 + Math.round(Math.random() * 2)));
+      this.sBars = this.sBars.slice(-14);
+      this.recent = 0;
+    }
+  }
+
+  simClockStr() {
+    var s = this.simSec % 86400;
+    function p2(n) { return (n < 10 ? '0' : '') + n; }
+    return p2(Math.floor(s / 3600)) + ':' + p2(Math.floor(s / 60) % 60) + ':' + p2(s % 60);
+  }
+
+  resetPieces() {
+    for (var i = 0; i < this.N; i++) {
+      var sd = this.seeds[i];
+      this.pcs[i] = {
+        x: sd.fx * this.W, y: -80,
+        w: sd.w, h: sd.round ? sd.w : sd.h,
+        a: 0, r: sd.round ? sd.w / 2 : 3, c: sd.c,
+        vy: sd.v0, landed: false, ox: 0, oy: 0
+      };
+    }
+  }
+
+  pile() {
+    var key = Math.round(this.W) + 'x' + Math.round(this.H);
+    if (this.pileKey === key) return this.pileArr;
+    var floor = this.H - 36, bw = 64, stack = {}, arr = [];
+    for (var i = 0; i < this.N; i++) {
+      var sd = this.seeds[i];
+      var h = sd.round ? sd.w : sd.h;
+      var b = Math.floor(sd.fx * this.W / bw);
+      var st = stack[b] || 0;
+      arr.push(floor - st - h / 2);
+      stack[b] = st + h * 0.8;
+    }
+    this.pileKey = key;
+    this.pileArr = arr;
+    return arr;
+  }
+
+  layout() {
+    var W = this.W, H = this.H;
+    var cx = W / 2, cy = H * 0.62;
+    var laneW = Math.min(W - 160, 960);
+    if (laneW < 200) laneW = W - 40;
+    var step = Math.min(48, (laneW - 24) / 16);
+    var bigW = Math.min(W - 200, 840);
+    if (bigW < 200) bigW = W - 48;
+    var tile = bigW / 12;
+    return {
+      cx: cx, cy: cy, laneW: laneW, step: step, cw: step * 0.8,
+      laneLeft: cx - laneW / 2,
+      laneY: [cy - 90, cy, cy + 90],
+      sub: (laneW - 24) / 18,
+      bigW: bigW, tile: tile, tileH: Math.min(56, tile)
+    };
+  }
+
+  lanePos(L, lane, idx, color) {
+    return { x: L.laneLeft + 12 + L.step / 2 + idx * L.step, y: L.laneY[lane], w: L.cw, h: 26, a: 0, r: 3, c: color };
+  }
+
+  target(i, tt) {
+    var T = this.T;
+    var accent = this.props.accent ?? '#F26A1B';
+    var L = this.layout();
+    var sd = this.seeds[i];
+    if (tt < T.lanes) {
+      var pile = this.pile();
+      return { x: sd.fx * this.W, y: pile[i], w: sd.w, h: sd.round ? sd.w : sd.h, a: sd.a, r: sd.round ? sd.w / 2 : 3, c: sd.c };
+    }
+    if (tt < T.close) {
+      if (i < 16) return this.lanePos(L, 0, i, '#2C3E66');
+      if (i < 28) return this.lanePos(L, 1, i - 16, '#2C3E66');
+      return this.lanePos(L, 2, i - 28, accent);
+    }
+    var k = i >= 28 ? i - 28 : 8 + this.rank[i];
+    if (tt >= T.mark && this.wr) {
+      var tw = this.wr.w / 12, th = this.wr.h / 3;
+      return {
+        x: this.wr.x + tw / 2 + (k % 12) * tw,
+        y: this.wr.y + th / 2 + Math.floor(k / 12) * th,
+        w: tw + 2, h: th + 2, a: 0, r: 0, c: accent
+      };
+    }
+    if (tt >= T.rect) {
+      return {
+        x: L.cx - L.bigW / 2 + L.tile / 2 + (k % 12) * L.tile,
+        y: L.cy - 1.5 * L.tileH + L.tileH / 2 + Math.floor(k / 12) * L.tileH,
+        w: L.tile + 1, h: L.tileH + 1, a: 0, r: 0, c: accent
+      };
+    }
+    var closed = i >= 28 || tt >= T.close + this.rank[i] * T.step;
+    if (!closed) {
+      if (i < 16) return this.lanePos(L, 0, i, '#2C3E66');
+      return this.lanePos(L, 1, i - 16, '#2C3E66');
+    }
+    return {
+      x: L.laneLeft + 12 + L.sub / 2 + (k % 18) * L.sub,
+      y: L.laneY[2] - 8 + Math.floor(k / 18) * 16,
+      w: L.sub - 4, h: 12, a: 0, r: 2, c: accent
+    };
+  }
+
+  tick() {
+    var now = performance.now();
+    var sp = this.props.speed ?? 1;
+    var dt = Math.min(0.05, (now - (this.last || now)) / 1000) * sp;
+    this.last = now;
+    this.tt = (now - this.start) * sp;
+    if (this.stageEl) {
+      this.W = this.stageEl.clientWidth || this.W;
+      this.H = this.stageEl.clientHeight || this.H;
+      if (this.wordEl) {
+        var a = this.wordEl.getBoundingClientRect(), b = this.stageEl.getBoundingClientRect();
+        if (a.width > 0) this.wr = { x: a.left - b.left, y: a.top - b.top, w: a.width, h: a.height };
+      }
+    }
+    var tt = this.tt, pile = this.pile(), T1 = this.T.pile, moved = 0;
+    for (var i = 0; i < this.N; i++) {
+      var p = this.pcs[i], sd = this.seeds[i];
+      var bx = p.x, by = p.y, box = p.ox, boy = p.oy;
+      if (tt < T1) {
+        p.x = sd.fx * this.W;
+        if (tt >= sd.spawn && !p.landed) {
+          p.vy += 2200 * dt;
+          p.y += p.vy * dt;
+          p.a += sd.spin * dt;
+          if (p.y >= pile[i]) {
+            p.y = pile[i];
+            if (Math.abs(p.vy) < 180) { p.vy = 0; p.landed = true; } else { p.vy = -p.vy * 0.32; }
+          }
+        }
+        if (p.landed) p.a += (sd.a - p.a) * 0.2;
+      } else {
+        var tg = this.target(i, tt);
+        var k = this.reduce ? 1 : 0.13;
+        p.x += (tg.x - p.x) * k;
+        p.y += (tg.y - p.y) * k;
+        p.w += (tg.w - p.w) * k;
+        p.h += (tg.h - p.h) * k;
+        p.a += (tg.a - p.a) * k;
+        p.r += (tg.r - p.r) * k;
+        p.c = tg.c;
+      }
+      var dx = p.x - this.mx, dy = p.y - this.my;
+      var d = Math.sqrt(dx * dx + dy * dy);
+      var R = 120, px = 0, py = 0;
+      if (d < R && d > 0.01) { var f = (R - d) / R; px = dx / d * f * 70; py = dy / d * f * 70; }
+      p.ox += (px - p.ox) * 0.2;
+      p.oy += (py - p.oy) * 0.2;
+      moved = Math.max(moved, Math.abs(p.x - bx) + Math.abs(p.y - by) + Math.abs(p.ox - box) + Math.abs(p.oy - boy));
+    }
+    var changed = this.ioChanged;
+    this.ioChanged = false;
+    var vh = window.innerHeight || 800;
+    var de = document.documentElement;
+    this.scrollable = !!de && de.scrollHeight > vh + 4;
+    var nowT = performance.now();
+    if (!this.trig) this.trig = {};
+    if (!this.ioVis) this.ioVis = {};
+    if (!this.reduce) {
+      for (var ak in this.asmDef) {
+        var ael = this.els[ak];
+        if (!ael) continue;
+        var vis;
+        if (this.scrollable) {
+          var atop = ael.getBoundingClientRect().top;
+          vis = atop < vh * 0.88 ? 1 : (atop > vh ? 0 : -1);
+        } else {
+          vis = this.ioVis[ak];
+          if (vis === undefined) vis = -1;
+        }
+        if (vis === 1 && this.trig[ak] === undefined) this.trig[ak] = nowT + this.asmDef[ak][2] * 1500;
+        if (vis === 0) delete this.trig[ak];
+        var apr = this.trig[ak] === undefined ? 0 : Math.max(0, Math.min(1, (nowT - this.trig[ak]) / 1200));
+        if (Math.abs(apr - this.prog[ak]) > 0.001) { this.prog[ak] = apr; changed = true; }
+      }
+    }
+    for (var rk in this.asmDef) {
+      var rel = this.els[rk], rov = this.ovs[this.asmDef[rk][0]];
+      if (!rel || !rov) continue;
+      var er = rel.getBoundingClientRect(), orr = rov.getBoundingClientRect();
+      this.rects[rk] = { x: er.left - orr.left, y: er.top - orr.top, w: er.width, h: er.height };
+    }
+    var idle = tt > this.T.r4 + 500 && moved < 0.05 && !changed;
+    if (!idle || !this.idle) this.setState({ tick: (this.state.tick + 1) % 1000000 });
+    this.idle = idle;
+    this.raf = requestAnimationFrame(() => this.tick());
+  }
+
+  updateNav() {
+    var zw = this.hdrZone ? this.hdrZone.clientWidth : 520;
+    var narrow = zw > 0 && zw < 380;
+    var de = document.documentElement;
+    var scrollable = !!de && de.scrollHeight > window.innerHeight + 4;
+    var act = '';
+    if (scrollable) {
+      this.navOrder.forEach((k) => {
+        var el = document.getElementById(k);
+        if (el && el.getBoundingClientRect().top <= 140) act = k;
+      });
+      if (window.innerHeight + window.scrollY >= de.scrollHeight - 2) act = 'contatti';
+    } else {
+      this.navOrder.forEach((k) => { if (this.navPassed[k]) act = k; });
+    }
+    if (act !== this.state.navActive || narrow !== this.state.hdrNarrow) this.setState({ navActive: act, hdrNarrow: narrow });
+  }
+
+  hdrVals(accent) {
+    var s = this.state;
+    var open = s.hdrOpen, narrow = s.hdrNarrow;
+    var colors = [['#A3ADBF', '#14213D'], ['#2C3E66', '#FFFFFF'], ['#14213D', '#FFFFFF'], [accent, '#14213D']];
+    var size = narrow ? 44 : 40;
+    var gap = 8;
+    var top = (48 - size) / 2;
+    var bricks = this.hdrKeys.map((k, i) => {
+      var fx = narrow ? 0 : i * (size + gap), fy = narrow ? 60 + i * (size + gap) : top;
+      var cx = (i % 2) * 12 + 4.5, cy = 13.5 + Math.floor(i / 2) * 12 + 4.5;
+      var cur = s.navActive === k;
+      return {
+        label: this.hdrLabels[i],
+        desc: this.hdrDesc[i],
+        go: this.hdrGoFns[k],
+        size: size,
+        fx: fx, fy: fy,
+        tx: open ? 0 : Math.round((cx - (fx + size / 2)) * 10) / 10,
+        ty: open ? 0 : Math.round((cy - (fy + size / 2)) * 10) / 10,
+        s: open ? 1 : Math.round(9 / size * 1000) / 1000,
+        delay: open ? i * 45 : (3 - i) * 35,
+        io: open ? 1 : 0,
+        idelay: open ? 180 + i * 45 : 0,
+        bg: colors[i][0],
+        color: colors[i][1],
+        pe: open ? 'auto' : 'none',
+        tab: open ? 0 : -1,
+        current: cur ? 'location' : 'false',
+        outline: (open && cur) ? '2px solid #14213D' : '2px solid transparent',
+        isCase: i === 0, isPath: i === 1, isProj: i === 2, isMail: i === 3
+      };
+    });
+    var rowW = 4 * size + 3 * gap;
+    var secColors = { caso: '#A3ADBF', percorso: '#2C3E66', progetti: '#14213D', servizi: '#C5CCD8', contatti: accent };
+    var act = s.navActive;
+    return {
+      hdrBricks: bricks,
+      hdrZoneClass: (open && narrow) ? 'lg-showtips' : '',
+      hdrExpanded: open ? 'true' : 'false',
+      hdrNameO: 1,
+      hdrNameX: (open && !narrow) ? rowW + 16 - 36 : 0,
+      hdrStatusO: 1,
+      hdrHasCur: !!act,
+      hdrNoCur: !act,
+      hdrCurColor: secColors[act] || 'transparent',
+      hdrCurLabel: this.navNames[act] || '',
+      hdrHint: s.hdrEver ? '' : (narrow ? 'Tocca il logo' : '← Passa sul logo per esplorare'),
+      setHdrZone: this.setHdrZone,
+      setHdrTrigger: this.setHdrTrigger,
+      onHdrEnter: this.onHdrEnter,
+      onHdrLeave: this.onHdrLeave,
+      onHdrFocusIn: this.onHdrFocusIn,
+      onHdrFocusOut: this.onHdrFocusOut,
+      onHdrKey: this.onHdrKey,
+      onHdrTrigger: this.onHdrTrigger
+    };
+  }
+
+  componentDidMount() {
+    try {
+      window.addEventListener('resize', this.onHdrResize);
+      window.addEventListener('scroll', this.onWinScroll, { passive: true });
+    } catch (e) { }
+    if (typeof IntersectionObserver !== 'undefined') {
+      var thN = [];
+      for (var qn = 0; qn <= 50; qn++) thN.push(qn / 50);
+      this.navIO = new IntersectionObserver((entries) => {
+        entries.forEach((en) => {
+          if (en.isIntersecting) this.navPassed[en.target.id] = en.intersectionRect.top > en.boundingClientRect.top + 1;
+        });
+        this.updateNav();
+      }, { threshold: thN });
+      this.navOrder.forEach((k) => { var el = document.getElementById(k); if (el) this.navIO.observe(el); });
+    }
+    setTimeout(() => this.updateNav(), 300);
+    try { this.reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { this.reduce = false; }
+    this.start = performance.now() - (this.reduce ? 60000 : 0);
+    this.last = performance.now();
+    this.ioChanged = false;
+    this.passed = {};
+    this.ioVis = {};
+    if (!this.reduce && typeof IntersectionObserver !== 'undefined') {
+      var keyOf = new Map();
+      var th = [];
+      for (var q = 0; q <= 100; q++) th.push(q / 100);
+      this.io = new IntersectionObserver((entries) => {
+        if (this.scrollable) return;
+        for (var n = 0; n < entries.length; n++) {
+          var en = entries[n];
+          var key = keyOf.get(en.target);
+          if (!key) continue;
+          var br = en.boundingClientRect, ir = en.intersectionRect;
+          if (!en.isIntersecting) {
+            this.ioVis[key] = this.passed[key] ? -1 : 0;
+          } else {
+            this.passed[key] = ir.top > br.top + 1;
+            this.ioVis[key] = 1;
+          }
+          this.ioChanged = true;
+        }
+      }, { threshold: th });
+      for (var ok in this.els) {
+        if (this.els[ok]) { keyOf.set(this.els[ok], ok); this.io.observe(this.els[ok]); }
+      }
+    }
+    this.raf = requestAnimationFrame(() => this.tick());
+    if (typeof IntersectionObserver !== 'undefined' && this.els.caseBoard) {
+      this.caseIO = new IntersectionObserver((entries) => {
+        var e = entries[entries.length - 1];
+        this.caseVis = e.isIntersecting && e.intersectionRatio >= 0.35;
+        this.caseGone = !e.isIntersecting;
+      }, { threshold: [0, 0.35, 0.6] });
+      this.caseIO.observe(this.els.caseBoard);
+    } else {
+      this.caseVis = true;
+      this.caseGone = false;
+    }
+    if (this.reduce) this.setState({ view: 'dopo', autoCase: false });
+    this.n = 0;
+    this.simTimer = setInterval(() => {
+      this.n++;
+      var st = this.state;
+      var changed = false;
+      if (st.autoCase && st.view === 'prima') {
+        if (this.caseVis) {
+          this.primaMs += 100;
+          changed = true;
+          if (this.primaMs >= this.PRIMA_MS) {
+            this.autoSwitched = true;
+            this.primaMs = 0;
+            this.setState({ view: 'dopo' });
+          }
+        } else if (this.caseGone && this.primaMs) {
+          this.primaMs = 0;
+          changed = true;
+        }
+      }
+      if (this.autoSwitched && this.caseGone) {
+        this.autoSwitched = false;
+        this.primaMs = 0;
+        this.setState({ view: 'prima', autoCase: true, filter: 'all' });
+      }
+      if (this.n % 8 === 0) {
+        if (this.state.view === 'dopo') this.stepSim();
+        changed = true;
+      }
+      if (changed && this.n % 2 === 0) this.setState({ simTick: this.n });
+    }, 100);
+  }
+
+  componentWillUnmount() {
+    try {
+      window.removeEventListener('resize', this.onHdrResize);
+      window.removeEventListener('scroll', this.onWinScroll);
+    } catch (e) { }
+    if (this.navIO) this.navIO.disconnect();
+    clearTimeout(this.hdrCloseT);
+    if (this.raf) cancelAnimationFrame(this.raf);
+    if (this.io) this.io.disconnect();
+    if (this.simTimer) clearInterval(this.simTimer);
+    if (this.caseIO) this.caseIO.disconnect();
+  }
+
+  renderVals() {
+    var tt = this.tt || 0;
+    var L = this.layout();
+    var cols = L.laneY.map(function (y) {
+      return { x: Math.round(L.laneLeft - 4), y: Math.round(y - 30), w: Math.round(L.laneW + 8), h: 60 };
+    });
+    var T = this.T;
+    var inMark = tt >= T.mark && !!this.wr;
+    var cornerR = { 0: '14px 0 0 0', 11: '0 14px 0 0', 24: '0 0 0 14px', 35: '0 0 14px 0' };
+    var pieces = this.pcs.map((p, i) => {
+      var kk = i >= 28 ? i - 28 : 8 + this.rank[i];
+      return {
+        x: Math.round(p.x + p.ox - p.w / 2), y: Math.round(p.y + p.oy - p.h / 2),
+        w: Math.round(p.w), h: Math.round(p.h), a: Math.round(p.a), c: p.c,
+        br: inMark ? (cornerR[kk] || '0') : Math.round(p.r) + 'px'
+      };
+    });
+    function on(t) { return tt > t ? 1 : 0; }
+    function sh(t) { return tt > t ? 0 : 18; }
+    var accentC = this.props.accent ?? '#F26A1B';
+    var asm = {};
+    var tiles = { caso: [], perc: [], prog: [], serv: [], cont: [] };
+    for (var key in this.asmDef) {
+      var dd = this.asmDef[key];
+      var e = this.prog[key];
+      if (e === undefined) e = 1;
+      var reveal = Math.max(0, Math.min(1, (e - 0.85) / 0.15));
+      asm[key] = { x: 0, y: 0, r: 0, s: 1, o: Math.round(reveal * 1000) / 1000, g: 0 };
+      var rc = this.rects[key];
+      if (!rc || e >= 1 || rc.w < 2) continue;
+      var finalC = dd[1] === 'ACCENT' ? accentC : dd[1];
+      var tcols = 6;
+      var trows = Math.max(1, Math.min(4, Math.round(rc.h / (rc.w / tcols))));
+      var tw = rc.w / tcols, th = rc.h / trows;
+      var tseeds = this.tileSeed[key];
+      var gapPx = 4 * (1 - reveal);
+      for (var ti = 0; ti < tcols * trows; ti++) {
+        var sdt = tseeds[ti];
+        var te = Math.max(0, Math.min(1, (e - sdt.lag * 0.3) / 0.55));
+        var ee = 1 - Math.pow(1 - te, 3);
+        var sc = 0.45 + 0.55 * ee;
+        var tW = (tw - gapPx) * sc, tH = (th - gapPx) * sc;
+        var cxT = rc.x + (ti % tcols) * tw + tw / 2 + sdt.dx * (1 - ee);
+        var cyT = rc.y + Math.floor(ti / tcols) * th + th / 2 + sdt.dy * (1 - ee);
+        tiles[dd[0]].push({
+          x: Math.round(cxT - tW / 2), y: Math.round(cyT - tH / 2),
+          w: Math.max(1, Math.round(tW)), h: Math.max(1, Math.round(tH)),
+          a: Math.round(sdt.rot * (1 - ee)),
+          c: te > 0.7 ? finalC : '#A3ADBF',
+          o: Math.round(Math.min(1, e * 5) * (1 - reveal) * 1000) / 1000
+        });
+      }
+    }
+    var st = this.state;
+    var accent = accentC;
+    var dopo = st.view === 'dopo';
+    var filter = st.filter;
+    var silos = [
+      { name: 'MGP', src: 'script notturni', d: 0, tasks: [{ n: 'Calcolo fabbisogno', d: 0 }, { n: 'Invio offerte', d: 400 }, { n: 'Acquisizione esiti', d: 800 }] },
+      { name: 'MI', src: 'file condivisi', d: 120, tasks: [{ n: 'Ricalcolo fabbisogno', d: 200 }, { n: 'Invio offerte', d: 600 }, { n: 'Acquisizione esiti', d: 1000 }] },
+      { name: 'MSD', src: 'portale esterno', d: 240, tasks: [{ n: 'Offerte di riserva', d: 300 }, { n: 'Verifica ordini', d: 700 }, { n: 'Acquisizione esiti', d: 1100 }] },
+      { name: 'GAS', src: 'foglio Excel', d: 360, tasks: [{ n: 'Calcolo fabbisogno gas', d: 100 }, { n: 'Nomine', d: 500 }, { n: 'Acquisizione prezzi', d: 900 }] }
+    ];
+    var bubbles = [
+      { l: 28, t: 6, d: 300, text: 'Il fabbisogno di domani è già calcolato?' },
+      { l: 58, t: 48, d: 1800, text: 'Le offerte MGP sono partite o no?' },
+      { l: 6, t: 60, d: 3300, text: 'Chi segue la sessione MI adesso?' },
+      { l: 40, t: 80, d: 4800, text: 'Le nomine gas sono andate?' }
+    ];
+    function mmss(sec) {
+      var m = Math.floor(sec / 60), s = sec % 60;
+      return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+    }
+    var markets = this.mk.map((m, i) => {
+      var ms = this.mStatus(m);
+      var pill = ms.status === 'In chiusura' ? [accent, '#14213D'] : (ms.status === 'Aperto' ? ['#DDE2EC', '#14213D'] : ['#14213D', '#FFFFFF']);
+      return {
+        id: m.id,
+        name: m.name,
+        status: ms.status,
+        pillBg: pill[0],
+        pillColor: pill[1],
+        timer: ms.label + ' ' + mmss(ms.rem),
+        sess: Math.round(ms.sess * 100),
+        barC: ms.status === 'In chiusura' ? accent : '#2C3E66',
+        done: this.doneBy[m.id],
+        border: filter === m.id ? '#14213D' : 'transparent',
+        pressed: filter === m.id ? 'true' : 'false',
+        pick: this.pickFns[m.id],
+        d: i * 80
+      };
+    });
+    var keep = (t) => filter === 'all' || t.mkt === filter;
+    var q = this.sQueue.filter(keep).slice(0, 4);
+    var r = this.sRun.filter(keep);
+    var dn = this.sDone.filter(keep).slice(0, 4);
+    var progW = Math.round(this.primaMs / this.PRIMA_MS * 100);
+    return {
+      isPrima: !dopo,
+      isDopo: dopo,
+      primaBg: dopo ? 'transparent' : '#FFFFFF',
+      primaColor: dopo ? '#C3CBDA' : '#14213D',
+      dopoBg: dopo ? accent : 'transparent',
+      dopoColor: dopo ? '#14213D' : '#C3CBDA',
+      primaPressed: dopo ? 'false' : 'true',
+      dopoPressed: dopo ? 'true' : 'false',
+      progVis: (!dopo && st.autoCase && this.primaMs > 0) ? 1 : 0,
+      progW: progW,
+      caseCaption: dopo
+        ? 'Dopo: quattro mercati in un’unica vista. Sessioni, code, esecuzioni ed eventi in tempo reale, filtrabili per mercato.'
+        : 'Prima: ogni mercato con i suoi strumenti e nessuno stato condiviso. Per sapere cosa stava girando bisognava chiedere in giro.',
+      silos: silos,
+      bubbles: bubbles,
+      markets: markets,
+      filtered: filter !== 'all',
+      filterLabel: filter === 'all' ? 'tutti i mercati' : filter,
+      simQueue: q.map((t) => ({ mkt: t.mkt, name: t.name })),
+      simRun: r.map((t) => ({ mkt: t.mkt, name: t.name, p: Math.round(t.p) })),
+      simDone: dn.map((t) => ({ mkt: t.mkt, name: t.name, bg: t.fresh ? '#FDE9DC' : '#EEF1F6' })),
+      qEmpty: q.length === 0,
+      rEmpty: r.length === 0,
+      dEmpty: dn.length === 0,
+      simLog: this.sLog.map((e) => ({ time: e.time, mkt: e.mkt, text: e.text, bg: e.fresh ? '#FDE9DC' : 'transparent' })),
+      simBars: this.sBars.map((v, i, a) => ({ h: Math.round(v / 12 * 100), c: i === a.length - 1 ? accent : '#2C3E66' })),
+      simClock: this.simClockStr(),
+      showPrima: this.showPrima,
+      showDopo: this.showDopo,
+      showAll: this.showAll,
+      accent: this.props.accent ?? '#F26A1B',
+      cols: cols,
+      pieces: pieces,
+      colOpacity: tt > T.lanes && tt < T.rect - 100 ? 1 : 0,
+      w1o: on(T.text1), w1y: sh(T.text1),
+      w2o: on(T.text2), w2y: sh(T.text2),
+      r1o: on(T.r1), r1y: sh(T.r1),
+      r2o: on(T.r2), r2y: sh(T.r2),
+      r3o: on(T.r3), r3y: sh(T.r3),
+      r4o: on(T.r4),
+      asm: asm,
+      tiles: tiles,
+      rf: this.rf,
+      ov: this.ov,
+      setStage: this.setStage,
+      setWord: this.setWord,
+      onMove: this.onMove,
+      onLeave: this.onLeave,
+      onReplay: this.onReplay,
+      ...this.hdrVals(accentC)
+    };
+  }
+}
+</script>
+</body>
+</html>
