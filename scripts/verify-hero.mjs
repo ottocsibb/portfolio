@@ -227,8 +227,160 @@ async function reduced(browser, vp) {
   await ctx.close();
 }
 
+const FIT_VIEWPORTS = [
+  { width: 360, height: 640, isMobile: true },
+  { width: 375, height: 667, isMobile: true },
+  { width: 390, height: 844, isMobile: true },
+  { width: 844, height: 390, isMobile: true },
+  { width: 1024, height: 600, isMobile: false },
+  { width: 1280, height: 720, isMobile: false },
+];
+
+/** Schermi bassi: pulsanti dentro l'hero, "Scorri" e "Rivedi" senza sovrapposizioni. */
+async function fit(browser) {
+  for (const vp of FIT_VIEWPORTS) {
+    for (const reduce of [false, true]) {
+      const tag = `${vp.width}x${vp.height}${reduce ? '-reduce' : ''}`;
+      console.log(`\n${tag}`);
+      const ctx = await browser.newContext({
+        viewport: { width: vp.width, height: vp.height },
+        deviceScaleFactor: vp.isMobile ? 2 : 1,
+        isMobile: vp.isMobile,
+        hasTouch: vp.isMobile,
+        reducedMotion: reduce ? 'reduce' : 'no-preference',
+      });
+      await ctx.addInitScript(INSTRUMENT);
+      const page = await ctx.newPage();
+      const errors = [];
+      page.on('pageerror', (e) => errors.push(e.message));
+      await page.goto(URL, { waitUntil: 'networkidle' });
+      await page.evaluate(() => document.fonts.ready);
+      if (reduce) await page.waitForTimeout(300);
+      else await waitHeroTime(page, 9500);
+      const m = await page.evaluate(() => {
+        const box = (el) => {
+          const r = el.getBoundingClientRect();
+          return { l: r.left, t: r.top + scrollY, r: r.right, b: r.bottom + scrollY, w: r.width, h: r.height };
+        };
+        const hero = box(document.querySelector('#top'));
+        const buttons = [...document.querySelectorAll('.hero__ctas .btn')].map(box);
+        const content = [...document.querySelectorAll('.hero__content > *, .hero__ctas .btn')].map(box);
+        const scroll = box(document.querySelector('.hero__scroll span'));
+        const rep = document.querySelector('[data-hero-replay]');
+        const replay = getComputedStyle(rep).display === 'none' ? null : box(rep);
+        return { hero, buttons, content, scroll, replay, vw: innerWidth };
+      });
+      // Pagina intera ritagliata sull'hero (header compreso): lo screenshot del solo elemento si ferma al viewport.
+      await page.screenshot({ path: `${OUT}/fit-${tag}.png`, fullPage: true, clip: { x: 0, y: 0, width: vp.width, height: Math.ceil(m.hero.b) } });
+      const inside = (a, b) => a.l >= b.l && a.r <= b.r && a.t >= b.t && a.b <= b.b;
+      const hit = (a, b) => a.l < b.r && b.l < a.r && a.t < b.b && b.t < a.b;
+      check(m.buttons.length === 2 && m.buttons.every((b) => inside(b, m.hero) && b.l >= 0 && b.r <= m.vw), 'i pulsanti stanno interamente dentro l\'hero');
+      const scrollHits = m.content.filter((c) => hit(c, m.scroll)).length;
+      const replayHits = m.replay ? m.content.filter((c) => hit(c, m.replay)).length + (hit(m.replay, m.scroll) ? 1 : 0) : 0;
+      check(scrollHits === 0 && replayHits === 0 && inside(m.scroll, m.hero) && (!m.replay || inside(m.replay, m.hero)), `"Scorri"${m.replay ? ' e "Rivedi"' : ''} non si sovrappongono a nulla`);
+      if (reduce) check(m.replay === null, '"Rivedi" nascosto con "riduci movimento"');
+      else check(m.replay !== null, '"Rivedi" visibile con l\'hero animato');
+      check(errors.length === 0, 'nessun errore in console');
+      await ctx.close();
+    }
+  }
+}
+
+/** Connessione lenta: lo script principale arriva dopo il fallback di 4 s. */
+async function slowScript(browser) {
+  console.log('\nscript principale ritardato di 6 s');
+  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  await ctx.addInitScript(() => {
+    window.__samples = [];
+    const tick = () => {
+      const steps = [...document.querySelectorAll('[data-hero-step]')];
+      if (steps.length) {
+        window.__samples.push({
+          t: Math.round(performance.now()),
+          minOpacity: Math.min(...steps.map((e) => parseFloat(getComputedStyle(e).opacity))),
+          live: !!document.querySelector('#top.hero--live'),
+        });
+      }
+      if (performance.now() < 11000) setTimeout(tick, 50);
+    };
+    tick();
+  });
+  await ctx.route(/\/assets\/index-[^/]+\.js$/, async (route) => {
+    await new Promise((r) => setTimeout(r, 6000));
+    await route.continue();
+  });
+  const page = await ctx.newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto(URL, { waitUntil: 'commit' });
+  await page.waitForFunction(() => performance.now() > 7000, null, { polling: 50 });
+  const at7 = await page.evaluate(() => window.__samples.at(-1));
+  await page.screenshot({ path: `${OUT}/lento-7s.png` });
+  await page.waitForFunction(() => performance.now() > 11000, null, { polling: 100 });
+  const samples = await page.evaluate(() => window.__samples);
+  const after = samples.filter((x) => x.t >= 4200);
+  const dips = after.filter((x) => x.minOpacity < 1);
+  const liveAt = samples.find((x) => x.live)?.t;
+  check(at7 && at7.live && at7.minOpacity === 1, `a 7 s lo script è partito e i testi sono visibili (script attivo da ${liveAt} ms)`);
+  check(after.length > 50 && dips.length === 0, `dai 4,2 agli 11 s i testi restano sempre visibili (${after.length} campioni, ${dips.length} con opacità < 1)`);
+  await page.screenshot({ path: `${OUT}/lento-11s.png` });
+  const a = await analyse(page);
+  const near = (x, y) => Math.abs(x - y) <= 2;
+  check(a.orange && near(a.orange[0], a.wr.x) && near(a.orange[2], a.wr.x + a.wr.w) && a.holes === 0 && a.tones === 1, 'evidenziatore composto dai pezzi, senza ricominciare');
+  check((await heroState(page)) === 'idle', 'scena ferma: ciclo fermo');
+  await page.click('[data-hero-replay]');
+  await page.waitForTimeout(300);
+  const replay = await page.evaluate(() => !document.querySelector('[data-hero-step="w2"]').classList.contains('is-in'));
+  check(replay && (await heroState(page)) === 'running', '"Rivedi" funziona come sempre');
+  check(errors.length === 0, 'nessun errore in console');
+  await ctx.close();
+}
+
+/** Senza JS: logo 2×2 e stato fermo dell'hero. */
+async function noJs(browser) {
+  for (const vp of [VIEWPORTS[0], VIEWPORTS[1]]) {
+    console.log(`\n${vp.name}-senza-js`);
+    const ctx = await browser.newContext({
+      viewport: { width: vp.width, height: vp.height },
+      deviceScaleFactor: vp.isMobile ? 2 : 1,
+      isMobile: vp.isMobile,
+      javaScriptEnabled: false,
+    });
+    const page = await ctx.newPage();
+    await page.goto(URL, { waitUntil: 'networkidle' });
+    await page.screenshot({ path: `${OUT}/${vp.name}-senza-js.png` });
+    const s = await page.evaluate(() => {
+      const cubes = [...document.querySelectorAll('[data-hdr-slot]')].map((e) => {
+        const r = e.getBoundingClientRect();
+        return { x: Math.round(r.left * 10) / 10, y: Math.round(r.top * 10) / 10, w: Math.round(r.width * 10) / 10, h: Math.round(r.height * 10) / 10 };
+      });
+      const w = getComputedStyle(document.querySelector('[data-hero-word]'));
+      return {
+        cubes,
+        bg: w.backgroundColor,
+        radius: w.borderRadius,
+        hidden: [...document.querySelectorAll('[data-hero-step]')].filter((e) => getComputedStyle(e).opacity !== '1').length,
+        replay: getComputedStyle(document.querySelector('[data-hero-replay]')).display,
+      };
+    });
+    const xs = [...new Set(s.cubes.map((c) => c.x))].sort((a, b) => a - b);
+    const ys = [...new Set(s.cubes.map((c) => c.y))].sort((a, b) => a - b);
+    const grid = s.cubes.every((c) => c.w === 9 && c.h === 9) && xs.length === 2 && ys.length === 2 && xs[1] - xs[0] === 12 && ys[1] - ys[0] === 12;
+    check(grid, `logo con quattro cubetti 9×9 in griglia 2×2 (x ${xs.join(', ')} · y ${ys.join(', ')})`);
+    check(s.bg === 'rgb(242, 106, 27)' && s.radius === '14px' && s.hidden === 0, `stato fermo dell'hero con evidenziatore (${s.bg}, ${s.radius}, testi nascosti: ${s.hidden})`);
+    check(s.replay === 'none', '"Rivedi" nascosto senza JS');
+    await ctx.close();
+  }
+}
+
 await mkdir(OUT, { recursive: true });
-const server = spawn('npx', ['vite', 'preview', '--port', String(PORT), '--strictPort'], { stdio: 'ignore' });
+// La porta deve essere libera: un server rimasto da un'esecuzione precedente servirebbe una build vecchia.
+if (await fetch(URL).then(() => true, () => false)) {
+  console.error(`La porta ${PORT} è già occupata: chiudi il server che la usa e riprova.`);
+  process.exit(1);
+}
+// vite avviato direttamente (non tramite npx), così kill() chiude proprio il server.
+const server = spawn(process.execPath, ['node_modules/vite/bin/vite.js', 'preview', '--port', String(PORT), '--strictPort'], { stdio: 'ignore' });
 try {
   await waitForServer();
   const browser = await chromium.launch();
@@ -236,6 +388,9 @@ try {
     await timeline(browser, vp);
     await reduced(browser, vp);
   }
+  await fit(browser);
+  await slowScript(browser);
+  await noJs(browser);
   await browser.close();
 } finally {
   server.kill();

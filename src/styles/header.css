@@ -72,8 +72,18 @@
 
 .lg-slot {
   position: absolute;
+  top: 4px;
+  width: 40px;
+  height: 40px;
   transition: transform 520ms var(--ease-bounce);
 }
+/* Posizione a riposo (logo 2×2 di cubetti 9×9), valida anche senza JS; con JS la imposta header.ts. */
+.lg-slot:nth-child(1) { left: 0; transform: translate(-15.5px, -6px) scale(0.225); }
+.lg-slot:nth-child(2) { left: 48px; transform: translate(-51.5px, -6px) scale(0.225); }
+.lg-slot:nth-child(3) { left: 96px; transform: translate(-111.5px, 6px) scale(0.225); }
+.lg-slot:nth-child(4) { left: 144px; transform: translate(-147.5px, 6px) scale(0.225); }
+/* Primo disegno e cambio fila/colonna: posizione applicata senza transizioni. */
+.lg-no-anim .lg-slot, .lg-no-anim .lg-name, .lg-no-anim .lg-icon { transition: none !important; }
 
 .lg-brick {
   position: relative;

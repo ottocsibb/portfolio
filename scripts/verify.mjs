@@ -136,7 +136,13 @@ async function checkPage(page, vp, reduce) {
 }
 
 await mkdir(OUT, { recursive: true });
-const server = spawn('npx', ['vite', 'preview', '--port', String(PORT), '--strictPort'], { stdio: 'ignore' });
+// La porta deve essere libera: un server rimasto da un'esecuzione precedente servirebbe una build vecchia.
+if (await fetch(URL).then(() => true, () => false)) {
+  console.error(`La porta ${PORT} è già occupata: chiudi il server che la usa e riprova.`);
+  process.exit(1);
+}
+// vite avviato direttamente (non tramite npx), così kill() chiude proprio il server.
+const server = spawn(process.execPath, ['node_modules/vite/bin/vite.js', 'preview', '--port', String(PORT), '--strictPort'], { stdio: 'ignore' });
 try {
   await waitForServer();
   const browser = await chromium.launch();

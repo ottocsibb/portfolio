@@ -87,8 +87,12 @@ export function initHero(): HeroController | null {
     return null;
   }
 
-  stage.classList.add('hero--live');
-  document.documentElement.classList.remove('hero-pending');
+  // Connessione lenta: se il fallback del <head> ha già mostrato lo stato fermo,
+  // l'hero parte dalla scena finita invece di ricominciare.
+  const root = document.documentElement;
+  const w = window as Window & { __heroFallback?: number };
+  window.clearTimeout(w.__heroFallback);
+  const skipIntro = root.classList.contains('hero-fallback');
 
   const { seeds, rank } = createSeeds();
   const pcs: Piece[] = [];
@@ -423,9 +427,31 @@ export function initHero(): HeroController | null {
     wake();
   });
 
+  /** Porta la scena alla fine: testi entrati, pezzi già composti nell'evidenziatore. */
+  function jumpToEnd(): void {
+    laneAlpha = 0;
+    measureWord();
+    const L = layout();
+    for (let i = 0; i < N; i++) {
+      const tg = target(i, L);
+      Object.assign(pcs[i], { x: tg.x, y: tg.y, w: tg.w, h: tg.h, a: tg.a, r: tg.r, rgb: hexToRgb(tg.c), landed: true });
+    }
+  }
+
+  // hero--live e lo stato dei testi cambiano insieme, prima di qualunque lettura del layout:
+  // così con skipIntro i testi già visibili non ripartono da opacità 0.
+  if (skipIntro) tt = T.r4 + 1000;
+  stage.classList.add('hero--live');
+  updateText();
+  root.classList.remove('hero-pending', 'hero-fallback');
+
   resize();
   resetPieces();
-  updateText();
+  if (skipIntro) {
+    jumpToEnd();
+    // Disegno subito, prima del prossimo frame: l'evidenziatore non scompare nemmeno per un istante.
+    draw();
+  }
   wake();
 
   return { replay };
