@@ -171,10 +171,20 @@ export function initHeader(hooks: HeaderHooks = {}): void {
     }
     if (window.innerHeight + window.scrollY >= de.scrollHeight - 2) next = 'contatti';
     if (next !== active || nextNarrow !== narrow) {
+      const layoutChanged = nextNarrow !== narrow;
       active = next;
       narrow = nextNarrow;
-      render();
+      if (layoutChanged) renderWithoutTransitions();
+      else render();
     }
+  }
+
+  /** Passaggio fila ↔ colonna (o primo disegno): i cubetti cambiano posto senza animarsi. */
+  function renderWithoutTransitions(): void {
+    zone.classList.add('lg-no-anim');
+    render();
+    void zone.offsetWidth;
+    requestAnimationFrame(() => zone.classList.remove('lg-no-anim'));
   }
 
   let navFrame = 0;
@@ -188,6 +198,6 @@ export function initHeader(hooks: HeaderHooks = {}): void {
   window.addEventListener('scroll', scheduleNav, { passive: true });
   window.addEventListener('resize', scheduleNav);
 
-  render();
+  renderWithoutTransitions();
   updateNav();
 }

@@ -4,6 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Portfolio Mariano</title>
+<script>
+  // Prima del primo disegno: se l'hero si animerà, nasconde subito testi ed evidenziatore.
+  // Se lo script principale non parte entro 4 s, torna lo stato fermo; quando lo script
+  // arriverà, l'hero partirà dalla scena finita invece di ricominciare (vedi hero.ts).
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    var root = document.documentElement;
+    root.classList.add('hero-pending');
+    window.__heroFallback = setTimeout(function () {
+      root.classList.remove('hero-pending');
+      root.classList.add('hero-fallback');
+    }, 4000);
+  }
+</script>
 <script type="module" src="/src/main.ts"></script>
 </head>
 <body>
@@ -77,8 +90,10 @@
       <a class="btn btn--secondary" href="./cv-mariano-de-magistris.pdf" download>Scarica il CV</a>
     </div>
   </div>
-  <div class="hero__scroll" data-hero-step="r4"><span>Scorri ↓</span></div>
-  <button type="button" class="hero__replay" data-hero-replay>↺ Rivedi</button>
+  <div class="hero__foot">
+    <div class="hero__scroll" data-hero-step="r4"><span>Scorri ↓</span></div>
+    <button type="button" class="hero__replay" data-hero-replay>↺ Rivedi</button>
+  </div>
 </section>
 
 <section id="caso" class="case">
