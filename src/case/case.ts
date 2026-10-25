@@ -284,6 +284,31 @@ export function initCase(assemble: AssembleController): void {
     }
   }
 
+  // Quando la dashboard cambia altezza (Prima ↔ Dopo, filtro) il contenuto sotto si sposta senza scroll.
+  // Se la dashboard è interamente sopra lo schermo (ritorno automatico a "Prima" scorrendo via),
+  // lo scroll compensa la differenza: ciò che l'utente sta guardando resta fermo. Il browser a volte
+  // lo fa già da sé (scroll anchoring): si compensa solo la parte che manca, mai due volte.
+  // In ogni caso i blocchi a cubi vengono rivalutati, così nessuno resta invisibile.
+  let lastScrollY = window.scrollY;
+  window.addEventListener('scroll', () => { lastScrollY = window.scrollY; }, { passive: true });
+  let boardH = board.offsetHeight;
+  new ResizeObserver(() => {
+    const h = board.offsetHeight;
+    const delta = h - boardH;
+    boardH = h;
+    if (delta === 0) return;
+    const r = board.getBoundingClientRect();
+    const anchored = window.scrollY - lastScrollY;
+    // Dov'era il fondo della dashboard prima del cambio, rispetto allo schermo.
+    const oldBottom = r.top + anchored + (h - delta);
+    if (oldBottom <= 0) {
+      const missing = delta - anchored;
+      if (Math.abs(missing) >= 1) window.scrollBy({ top: missing, behavior: 'instant' });
+    }
+    lastScrollY = window.scrollY;
+    assemble.refresh();
+  }).observe(board);
+
   new IntersectionObserver((entries) => {
     const e = entries[entries.length - 1];
     boardIn = e.isIntersecting;

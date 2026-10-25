@@ -519,6 +519,114 @@ async function texts(browser) {
   await ctx.close();
 }
 
+// ---------------- Dashboard che cambia altezza ----------------
+
+const zoneWaiting = (page) => page.evaluate(() => [...document.querySelectorAll('[data-asm]')]
+  .filter((e) => { const r = e.getBoundingClientRect(); return r.top < innerHeight * 0.88 && r.bottom > 0 && e.dataset.asmState === 'waiting'; })
+  .map((e) => e.dataset.asm));
+
+/** Ritorno automatico a "Prima" con la dashboard sopra lo schermo (390×844): niente salti, niente blocchi invisibili. */
+async function autoReturnShift(browser) {
+  console.log('\n390×844 · ritorno automatico a "Prima" con la dashboard sopra lo schermo');
+  const { ctx, page, errors } = await newPage(browser, VIEWPORTS[1]);
+  await page.goto(URL, { waitUntil: 'networkidle' });
+  await sleep(page, 300);
+  await boardTo(page, 1);
+  await page.waitForFunction(() => document.querySelector('[data-case-view="dopo"]').getAttribute('aria-pressed') === 'true', null, { timeout: 9000 });
+  await sleep(page, 500);
+  // Scorre finché la dashboard esce dall'alto; la posizione di t1 si legge subito, prima che scatti il ritorno.
+  const before = await page.evaluate(() => {
+    const b = document.querySelector('[data-case-board]');
+    scrollTo(0, scrollY + b.getBoundingClientRect().bottom + 10);
+    return { h: b.offsetHeight, t1: document.querySelector('[data-asm="t1"]').getBoundingClientRect().top };
+  });
+  await sleep(page, 600);
+  const after = await page.evaluate(() => ({
+    view: document.querySelector('[data-case-view="dopo"]').getAttribute('aria-pressed') === 'true' ? 'dopo' : 'prima',
+    h: document.querySelector('[data-case-board]').offsetHeight,
+    t1: document.querySelector('[data-asm="t1"]').getBoundingClientRect().top,
+  }));
+  check(after.view === 'prima' && after.h < before.h - 200, `scatta il ritorno a "Prima" (dashboard ${before.h} → ${after.h}px)`);
+  check(Math.abs(after.t1 - before.t1) <= 2, `la card t1 resta ferma sullo schermo (${Math.round(before.t1)} → ${Math.round(after.t1)}px)`);
+  await sleep(page, 1700);
+  const waiting = await zoneWaiting(page);
+  check(waiting.length === 0, `nessun blocco nella zona dell'88% resta in attesa, senza altro scroll${waiting.length ? ' — ' + waiting.join(', ') : ''}`);
+  await page.screenshot({ path: `${OUT}/mobile-ritorno-prima.png` });
+  check(errors.length === 0, 'nessun errore in console');
+  await ctx.close();
+}
+
+/** Filtro e "Mostra tutti i mercati" con didascalia e percorso subito sotto la dashboard (1280×720). */
+async function filterShift(browser) {
+  console.log('\n1280×720 · filtro con il percorso subito sotto la dashboard');
+  const vp = { name: 'desktop-1280', width: 1280, height: 720, isMobile: false };
+  const { ctx, page, errors } = await newPage(browser, vp);
+  await page.goto(URL, { waitUntil: 'networkidle' });
+  await sleep(page, 300);
+  await boardTo(page, 1);
+  await sleep(page, 1700);
+  await page.evaluate(() => document.querySelector('[data-case-view="dopo"]').click());
+  await sleep(page, 900);
+  // Didascalia e titolo del percorso appena sotto la linea dell'88%, ancora da comporre.
+  await placeTop(page, '[data-asm="percHead"]', 0.95);
+  await sleep(page, 300);
+  const h0 = await page.evaluate(() => document.querySelector('[data-case-board]').offsetHeight);
+  await page.evaluate(() => [...document.querySelectorAll('.mkt')].find((m) => m.textContent.includes('GAS')).click());
+  await sleep(page, 300);
+  const h1 = await page.evaluate(() => document.querySelector('[data-case-board]').offsetHeight);
+  await sleep(page, 1700);
+  let waiting = await zoneWaiting(page);
+  check(waiting.length === 0, `filtro GAS (dashboard ${h0} → ${h1}px): nessun blocco invisibile nella zona dell'88%${waiting.length ? ' — ' + waiting.join(', ') : ''}`);
+  await placeTop(page, '[data-asm="percHead"]', 0.95);
+  await sleep(page, 300);
+  await page.evaluate(() => document.querySelector('.chip-btn').click());
+  await sleep(page, 300);
+  const h2 = await page.evaluate(() => document.querySelector('[data-case-board]').offsetHeight);
+  await sleep(page, 1700);
+  waiting = await zoneWaiting(page);
+  check(waiting.length === 0, `"Mostra tutti i mercati" (dashboard ${h1} → ${h2}px): nessun blocco invisibile nella zona dell'88%${waiting.length ? ' — ' + waiting.join(', ') : ''}`);
+  // Dashboard che si accorcia (Dopo → Prima): il titolo del percorso sale nella zona dell'88% senza scroll.
+  await placeTop(page, '[data-asm="percHead"]', 0.95);
+  await sleep(page, 300);
+  const p0 = await page.evaluate(() => ({ top: document.querySelector('[data-asm="percHead"]').getBoundingClientRect().top / innerHeight, state: document.querySelector('[data-asm="percHead"]').dataset.asmState, y: scrollY }));
+  await page.evaluate(() => document.querySelector('[data-case-view="prima"]').click());
+  await sleep(page, 300);
+  const p1 = await page.evaluate(() => ({ top: document.querySelector('[data-asm="percHead"]').getBoundingClientRect().top / innerHeight, h: document.querySelector('[data-case-board]').offsetHeight, y: scrollY }));
+  await sleep(page, 1700);
+  waiting = await zoneWaiting(page);
+  const ph = await state(page, 'percHead');
+  check(p0.state === 'waiting' && p1.top < 0.88 && p1.y === p0.y, `Dopo → Prima (dashboard ${h2} → ${p1.h}px): il titolo del percorso sale da ${Math.round(p0.top * 100)}% a ${Math.round(p1.top * 100)}% dell'altezza senza scroll`);
+  check(ph === 'composed' && waiting.length === 0, `e si compone (${ph})${waiting.length ? ' — in attesa: ' + waiting.join(', ') : ''}`);
+  check(errors.length === 0, 'nessun errore in console');
+  await ctx.close();
+}
+
+/** Prima ↔ Dopo a mano con la dashboard sullo schermo: il contenuto sopra la dashboard non salta. */
+async function manualToggleShift(browser, vp) {
+  console.log(`\n${vp.name} · Prima ↔ Dopo a mano`);
+  const { ctx, page, errors } = await newPage(browser, vp);
+  await page.goto(URL, { waitUntil: 'networkidle' });
+  await sleep(page, 300);
+  await boardTo(page, 1);
+  await sleep(page, 1700);
+  const pos = () => page.evaluate(() => ({
+    head: document.querySelector('.case__head').getBoundingClientRect().top,
+    ctrl: document.querySelector('.case__ctrl').getBoundingClientRect().top,
+    board: document.querySelector('[data-case-board]').getBoundingClientRect().top,
+  }));
+  const moves = [];
+  for (const v of ['dopo', 'prima', 'dopo']) {
+    const a = await pos();
+    await page.evaluate((x) => document.querySelector(`[data-case-view="${x}"]`).click(), v);
+    await sleep(page, 400);
+    const b = await pos();
+    moves.push(Math.max(Math.abs(b.head - a.head), Math.abs(b.ctrl - a.ctrl), Math.abs(b.board - a.board)));
+  }
+  check(moves.every((m) => m <= 2), `nessun salto del contenuto sopra la dashboard (spostamenti ${moves.map((m) => Math.round(m)).join(' / ')}px)`);
+  check(errors.length === 0, 'nessun errore in console');
+  await ctx.close();
+}
+
 // ---------------- Riduci movimento ----------------
 
 async function reduced(browser, vp) {
@@ -562,6 +670,9 @@ try {
     await caseStudy(browser, vp);
     await reduced(browser, vp);
   }
+  await autoReturnShift(browser);
+  await filterShift(browser);
+  for (const vp of VIEWPORTS) await manualToggleShift(browser, vp);
   await texts(browser);
   await browser.close();
 } finally {

@@ -43,7 +43,8 @@ export interface AssembleHooks {
 
 export interface AssembleController {
   isComposed(key: string): boolean;
-  onChange(cb: (key: string, state: BlockState) => void): void;
+  /** Rivaluta la posizione dei blocchi al prossimo frame (il contenuto si è spostato senza scroll). */
+  refresh(): void;
 }
 
 /**
@@ -68,11 +69,10 @@ function createSeeds(): Map<string, TileSeed[]> {
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 
 export function initAssemble(hooks: AssembleHooks = {}): AssembleController {
-  const listeners: ((key: string, state: BlockState) => void)[] = [];
   const els = Array.from(document.querySelectorAll<HTMLElement>('[data-asm]'));
   const controller: AssembleController = {
     isComposed: (key) => blocks.find((b) => b.key === key)?.state === 'composed',
-    onChange: (cb) => { listeners.push(cb); },
+    refresh: () => {},
   };
   const blocks: Block[] = [];
 
@@ -105,7 +105,6 @@ export function initAssemble(hooks: AssembleHooks = {}): AssembleController {
     b.el.dataset.asmState = state;
     b.el.classList.toggle('asm-done', state === 'composed');
     if (state !== 'composing') b.el.style.removeProperty('opacity');
-    for (const cb of listeners) cb(b.key, state);
   }
 
   function clearTiles(b: Block): void {
@@ -237,6 +236,7 @@ export function initAssemble(hooks: AssembleHooks = {}): AssembleController {
   };
   window.addEventListener('scroll', schedule, { passive: true });
   window.addEventListener('resize', schedule);
+  controller.refresh = schedule;
   document.addEventListener('visibilitychange', wake);
 
   // Tastiera: il focus dentro un blocco non ancora composto lo compone subito.
