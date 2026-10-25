@@ -55,6 +55,7 @@ export function initHeader(hooks: HeaderHooks = {}): void {
   let openedAt = 0;
   let closeTimer = 0;
   let refocusing = false;
+  let holdClosedUntil = 0;
 
   function render(): void {
     const size = narrow ? 44 : 40;
@@ -105,7 +106,8 @@ export function initHeader(hooks: HeaderHooks = {}): void {
 
   function openBricks(): void {
     window.clearTimeout(closeTimer);
-    if (open) return;
+    // Subito dopo la scelta di una voce il logo non si riapre da solo (focus restituito, tocchi emulati).
+    if (open || Date.now() < holdClosedUntil) return;
     open = true;
     ever = true;
     openedAt = Date.now();
@@ -157,9 +159,18 @@ export function initHeader(hooks: HeaderHooks = {}): void {
   });
 
   bricks.forEach((brick) => {
-    brick.addEventListener('click', () => {
+    brick.addEventListener('click', (e) => {
+      // Scelta una voce: il logo si richiude e il focus esce dal logo, così nulla lo riapre durante lo scorrimento.
+      // Da tastiera (click senza puntatore) il focus va alla sezione di destinazione; al tocco o al clic si toglie.
+      holdClosedUntil = Date.now() + 800;
       closeBricks();
       const target = document.getElementById(brick.dataset.target ?? '');
+      if (e.detail === 0 && target) {
+        if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+        target.focus({ preventScroll: true });
+      } else {
+        brick.blur();
+      }
       target?.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
     });
   });

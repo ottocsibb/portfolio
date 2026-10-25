@@ -431,6 +431,75 @@ async function headerGeometry(browser) {
   check(bad.length === 0, `da 320 a 1440px (${widths.length} larghezze × 4 stati)${bad.length ? ' — ' + bad.join(' | ') : ''}`);
 }
 
+/** Su telefono: scelta una voce del menu, il logo torna come prima (segnalazione di Mariano). */
+async function headerMenuMobile(browser) {
+  console.log('\nheader · su telefono il logo torna chiuso dopo la scelta di una voce');
+  const { devices } = require(process.env.PLAYWRIGHT_PATH ?? 'playwright');
+  for (const dev of ['Pixel 7', 'iPhone 13']) {
+    const ctx = await browser.newContext({ ...devices[dev] });
+    await ctx.addInitScript(ERRORS);
+    const page = await ctx.newPage();
+    const cdp = await ctx.newCDPSession(page);
+    await page.goto(URL, { waitUntil: 'networkidle' });
+    // Sui telefoni veri, dopo un tocco lo stato :hover resta sull'elemento toccato ("hover appiccicoso"):
+    // Playwright non lo fa da solo, lo si forza con il protocollo di Chromium.
+    await cdp.send('DOM.enable');
+    await cdp.send('CSS.enable');
+    const stickyHover = async (sel) => {
+      const { root } = await cdp.send('DOM.getDocument');
+      const { nodeId } = await cdp.send('DOM.querySelector', { nodeId: root.nodeId, selector: sel });
+      await cdp.send('CSS.forcePseudoState', { nodeId, forcedPseudoClasses: ['hover'] });
+      return async () => cdp.send('CSS.forcePseudoState', { nodeId, forcedPseudoClasses: [] });
+    };
+    const state = () => page.evaluate(() => ({
+      open: document.querySelector('[data-hdr-zone]').classList.contains('lg-open'),
+      expanded: document.querySelector('[data-hdr-trigger]').getAttribute('aria-expanded'),
+      focusInLogo: document.querySelector('[data-hdr-zone]').contains(document.activeElement),
+      tips: [...document.querySelectorAll('.lg-tip')].filter((t) => getComputedStyle(t).opacity !== '0').length,
+      lifted: [...document.querySelectorAll('.lg-brick')].filter((b) => getComputedStyle(b).transform !== 'none' || getComputedStyle(b).boxShadow !== 'none').length,
+      cubes: [...document.querySelectorAll('[data-hdr-slot]')].map((s) => Math.round(s.getBoundingClientRect().width)),
+    }));
+    const results = [];
+    for (const brick of ['.lg-brick--path', '.lg-brick--proj', '.lg-brick--mail', '.lg-brick--case']) {
+      await page.tap('[data-hdr-trigger]');
+      await page.waitForTimeout(700);
+      await page.evaluate(() => window.scrollBy(0, 300)); // scorre con il menu aperto
+      await page.waitForTimeout(300);
+      const box = await page.locator(brick).boundingBox();
+      await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
+      const release = await stickyHover(brick);
+      await page.waitForTimeout(1600);
+      results.push([brick, await state()]);
+      await release();
+    }
+    const bad = results.filter(([, s]) => s.open || s.expanded !== 'false' || s.focusInLogo || s.tips > 0 || s.lifted > 0 || s.cubes.some((c) => c > 10));
+    check(bad.length === 0, `${dev}: dopo 4 voci scelte, anche con l'hover appiccicoso, il logo torna come prima (cubetti ${results[0][1].cubes.join('/')}px, nessun cubetto sollevato, nessuna nuvoletta, niente focus nel logo)${bad.length ? ' — ' + JSON.stringify(bad.map(([b, s]) => [b, s])) : ''}`);
+    // Il browser che restituisce il focus al mattoncino subito dopo la scelta non riapre il logo.
+    await page.tap('[data-hdr-trigger]');
+    await page.waitForTimeout(700);
+    const b2 = await page.locator('.lg-brick--path').boundingBox();
+    await page.touchscreen.tap(b2.x + b2.width / 2, b2.y + b2.height / 2);
+    await page.evaluate(() => document.querySelector('.lg-brick--path').focus());
+    await page.waitForTimeout(1200);
+    check(!(await state()).open, `${dev}: il focus restituito al mattoncino subito dopo la scelta non riapre il logo`);
+    const errs = await page.evaluate(() => window.__errors);
+    check(errs.length === 0, `${dev}: nessun errore`);
+    await ctx.close();
+  }
+  // Da tastiera: la voce scelta porta il focus alla sezione
+  const { ctx, page } = await context(browser, DESKTOP);
+  await page.goto(URL, { waitUntil: 'networkidle' });
+  await page.focus('[data-hdr-trigger]');
+  await page.waitForTimeout(600);
+  await page.keyboard.press('Tab');
+  await page.keyboard.press('Tab');
+  await page.keyboard.press('Enter');
+  await page.waitForTimeout(1500);
+  const k = await page.evaluate(() => ({ id: document.activeElement?.id, open: document.querySelector('[data-hdr-zone]').classList.contains('lg-open') }));
+  check(k.id === 'percorso' && !k.open, `da tastiera: logo chiuso e focus sulla sezione scelta (#${k.id})`);
+  await ctx.close();
+}
+
 // ---------------- Ritocchi dal Blocco 3 ----------------
 
 async function block3Fixes(browser) {
@@ -588,6 +657,7 @@ try {
   await audioReduced(browser);
   await audioLateScript(browser);
   await headerGeometry(browser);
+  await headerMenuMobile(browser);
   await block3Fixes(browser);
   await seo();
   await wholePage(browser);

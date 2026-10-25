@@ -127,7 +127,14 @@
 
 .lg-open .lg-brick { pointer-events: auto; }
 .lg-open .lg-brick[aria-current="location"] { outline-color: var(--c-night); }
-.lg-brick:hover, .lg-brick:focus-visible { transform: translateY(-3px); box-shadow: 0 8px 16px rgba(20, 33, 61, 0.2); }
+/* Effetti al passaggio solo con un mouse vero: sui telefoni lo stato :hover resta "appiccicato" dopo un tocco. */
+.lg-brick:focus-visible { transform: translateY(-3px); box-shadow: 0 8px 16px rgba(20, 33, 61, 0.2); }
+@media (hover: hover) and (pointer: fine) {
+  .lg-brick:hover { transform: translateY(-3px); box-shadow: 0 8px 16px rgba(20, 33, 61, 0.2); }
+  .lg-brick:hover .lg-tip { opacity: 1; transform: translate(0, 0); }
+  .lg-showtips .lg-brick:hover .lg-tip { transform: translate(0, -50%); }
+  .hdr-audio:hover .hdr-audio__tip { opacity: 1; transform: translate(0, 0); }
+}
 .lg-brick:focus-visible { outline-color: var(--c-night); }
 
 .lg-icon { display: inline-flex; opacity: 0; transition: opacity 200ms ease; }
@@ -163,7 +170,7 @@
 }
 .lg-tip b { display: block; font-size: 13px; font-weight: 700; }
 .lg-tip small { display: block; font-size: 12px; font-weight: 500; color: var(--c-on-night); }
-.lg-brick:hover .lg-tip, .lg-brick:focus-visible .lg-tip { opacity: 1; transform: translate(0, 0); }
+.lg-brick:focus-visible .lg-tip { opacity: 1; transform: translate(0, 0); }
 
 .lg-showtips .lg-tip {
   left: calc(100% + 12px);
@@ -174,7 +181,7 @@
   width: max-content;
   max-width: calc(100vw - 130px);
 }
-.lg-showtips .lg-brick:hover .lg-tip, .lg-showtips .lg-brick:focus-visible .lg-tip { transform: translate(0, -50%); }
+.lg-showtips .lg-brick:focus-visible .lg-tip { transform: translate(0, -50%); }
 .lg-showtips .lg-tip::before { left: -4px; top: 50%; margin: -5px 0 0 0; }
 
 .hdr-status {
@@ -245,7 +252,7 @@
   transform: rotate(45deg);
   border-radius: 2px;
 }
-.hdr-audio:hover .hdr-audio__tip, .hdr-audio:focus-visible .hdr-audio__tip { opacity: 1; transform: translate(0, 0); }
+.hdr-audio:focus-visible .hdr-audio__tip { opacity: 1; transform: translate(0, 0); }
 .hdr-audio.tip-closed .hdr-audio__tip { opacity: 0; }
 
 @media (max-width: 419.98px) {

@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { defineConfig, type Plugin } from 'vite';
-import { SITE_URL } from './site.config';
+import { SITE_URL } from './site.config.ts';
 
 /**
  * Sostituisce %SITE_URL% nell'HTML (Vite lo fa da solo solo per le variabili d'ambiente %VITE_…%)
