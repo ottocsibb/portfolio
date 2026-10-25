@@ -95,10 +95,12 @@ async function newPage(browser, vp, opts = {}) {
     reducedMotion: opts.reduce ? 'reduce' : 'no-preference',
   });
   await ctx.addInitScript(INSTRUMENT);
+  // Senza i font locali: le richieste woff2 vengono bloccate (resta il font di sistema).
+  if (opts.noFonts) await ctx.route(/\.woff2$/, (r) => r.abort());
   const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
+  page.on('console', (m) => m.type() === 'error' && !(opts.noFonts && /Failed to load resource/.test(m.text())) && errors.push(m.text()));
   return { ctx, page, errors };
 }
 
@@ -632,10 +634,106 @@ async function manualToggleShift(browser, vp) {
   await ctx.close();
 }
 
-/** In "Dopo" l'altezza della dashboard resta fissa durante la simulazione, filtro compreso; la didascalia sotto non si muove. */
-async function stableHeight(browser, vp) {
-  console.log(`\n${vp.width}×${vp.height} · altezza della dashboard in "Dopo"`);
+/** Testi interi come nel prototipo: nessun nome di task, riga del log, titolo o testo delle card tagliato. */
+async function wholeText(browser, vp) {
+  console.log(`\n${vp.width}×${vp.height} · testi interi in "Dopo"`);
   const { ctx, page, errors } = await newPage(browser, vp);
+  await page.goto(URL, { waitUntil: 'networkidle' });
+  await sleep(page, 300);
+  await boardTo(page, 1);
+  await sleep(page, 1700);
+  await page.evaluate(() => document.querySelector('[data-case-view="dopo"]').click());
+  const cut = await page.evaluate(async () => {
+    const sel = '.task__name, .log__text, .panel__title, .mkt__name, .mkt__timer, .mkt__done, .mkt__pill, .col__title, .panel__label';
+    const bad = new Set();
+    let checked = 0;
+    const t0 = performance.now();
+    let filtered = false, cleared = false;
+    while (performance.now() - t0 < 6000) {
+      const t = performance.now() - t0;
+      if (!filtered && t > 2000) { [...document.querySelectorAll('.mkt')].find((m) => m.textContent.includes('MGP')).click(); filtered = true; }
+      if (!cleared && t > 4000) { document.querySelector('.chip-btn').click(); cleared = true; }
+      for (const e of document.querySelectorAll(`.dopo ${sel.split(', ').join(', .dopo ')}`)) {
+        if (e.closest('.case-measure')) continue;
+        const cs = getComputedStyle(e);
+        checked++;
+        if (e.scrollWidth > e.clientWidth + 1 || cs.textOverflow === 'ellipsis' || cs.whiteSpace === 'nowrap') bad.add(e.textContent);
+      }
+      await new Promise((r) => setTimeout(r, 250));
+    }
+    return { bad: [...bad], checked };
+  });
+  check(cut.checked > 100 && cut.bad.length === 0, `nessun testo tagliato, niente puntini (${cut.checked} controlli)${cut.bad.length ? ' — ' + cut.bad.join(' | ') : ''}`);
+  check(errors.length === 0, 'nessun errore in console');
+  await ctx.close();
+}
+
+/** L'ingresso di un task (sale da 14px più in basso) non viene tagliato dal fondo della board. */
+async function riseNotClipped(browser, vp) {
+  console.log(`\n${vp.width}×${vp.height} · ingresso dei task non tagliato`);
+  const { ctx, page, errors } = await newPage(browser, vp);
+  await page.goto(URL, { waitUntil: 'networkidle' });
+  await sleep(page, 300);
+  await boardTo(page, 1);
+  await sleep(page, 1700);
+  await page.evaluate(() => document.querySelector('[data-case-view="dopo"]').click());
+  await page.evaluate(() => document.querySelector('.cols').scrollIntoView({ block: 'center' }));
+  const r = await page.evaluate(async () => {
+    const cols = document.querySelector('.cols');
+    let samples = 0, clipped = 0, worst = 0, rising = 0;
+    const t0 = performance.now();
+    while (performance.now() - t0 < 8000) {
+      const c = cols.getBoundingClientRect();
+      const bottom = c.top + cols.clientHeight;
+      for (const t of cols.querySelectorAll('.task')) {
+        const b = t.getBoundingClientRect().bottom;
+        // solo gli ingressi in corso (un'animazione finita resta in getAnimations per via di fill: both)
+        if (t.getAnimations().some((a) => a.playState === 'running')) rising++;
+        if (b > bottom + 0.5) { clipped++; worst = Math.max(worst, b - bottom); }
+      }
+      samples++;
+      await new Promise((res) => setTimeout(res, 50));
+    }
+    return { samples, clipped, worst, rising };
+  });
+  check(r.samples > 120 && r.rising > 0 && r.clipped === 0, `${r.samples} campioni ogni 50 ms, ${r.rising} task in ingresso osservati: nessuno tagliato in basso${r.clipped ? ` (${r.clipped}, fino a ${r.worst.toFixed(1)}px)` : ''}`);
+  check(errors.length === 0, 'nessun errore in console');
+  await ctx.close();
+}
+
+/** Ritorno automatico a "Prima" mentre cambia solo l'altezza della finestra (barra degli indirizzi mobile). */
+async function heightOnlyResize(browser) {
+  console.log('\n390×844 → 390×900 · ritorno automatico a "Prima" mentre cambia solo l\'altezza della finestra');
+  const { ctx, page, errors } = await newPage(browser, VIEWPORTS[1]);
+  await page.goto(URL, { waitUntil: 'networkidle' });
+  await sleep(page, 300);
+  await boardTo(page, 1);
+  await page.waitForFunction(() => document.querySelector('[data-case-view="dopo"]').getAttribute('aria-pressed') === 'true', null, { timeout: 9000 });
+  await sleep(page, 500);
+  // La dashboard esce dall'alto e subito dopo la finestra cambia altezza: il ritorno a "Prima" e il resize
+  // cadono nello stesso frame, come quando la barra degli indirizzi mobile si nasconde scorrendo.
+  const before = await page.evaluate(() => {
+    const b = document.querySelector('[data-case-board]');
+    scrollTo(0, scrollY + b.getBoundingClientRect().bottom + 10);
+    return { h: b.offsetHeight, t1: document.querySelector('[data-asm="t1"]').getBoundingClientRect().top };
+  });
+  await page.setViewportSize({ width: 390, height: 900 });
+  await sleep(page, 600);
+  const after = await page.evaluate(() => ({
+    view: document.querySelector('[data-case-view="dopo"]').getAttribute('aria-pressed') === 'true' ? 'dopo' : 'prima',
+    h: document.querySelector('[data-case-board]').offsetHeight,
+    t1: document.querySelector('[data-asm="t1"]').getBoundingClientRect().top,
+  }));
+  check(after.view === 'prima' && after.h < before.h - 200, `scatta il ritorno a "Prima" (dashboard ${before.h} → ${after.h}px)`);
+  check(Math.abs(after.t1 - before.t1) <= 2, `la card t1 resta ferma anche con la finestra che cambia altezza (${Math.round(before.t1)} → ${Math.round(after.t1)}px)`);
+  check(errors.length === 0, 'nessun errore in console');
+  await ctx.close();
+}
+
+/** In "Dopo" l'altezza della dashboard resta fissa durante la simulazione, filtro compreso; la didascalia sotto non si muove. */
+async function stableHeight(browser, vp, opts = {}) {
+  console.log(`\n${vp.width}×${vp.height} · altezza della dashboard in "Dopo"${opts.noFonts ? ' · senza font locali' : ''}`);
+  const { ctx, page, errors } = await newPage(browser, vp, opts);
   await page.goto(URL, { waitUntil: 'networkidle' });
   await sleep(page, 300);
   await boardTo(page, 1);
@@ -668,7 +766,7 @@ async function stableHeight(browser, vp) {
   check(partly && capRange <= 1, `didascalia ferma con la dashboard parzialmente visibile (scarto ${capRange.toFixed(1)}px)`);
   const lay = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
   check(lay <= 0, 'nessuno scroll orizzontale della pagina');
-  if (vp.width === 390 || vp.width === 1440) {
+  if (!opts.noFonts && (vp.width === 390 || vp.width === 1440)) {
     await boardTo(page, 1);
     await sleep(page, 400);
     await page.screenshot({ path: `${OUT}/${vp.width === 390 ? 'mobile' : 'desktop'}-dopo-10s.png` });
@@ -765,7 +863,13 @@ try {
   await autoReturnShift(browser);
   await filterShift(browser);
   for (const vp of VIEWPORTS) await manualToggleShift(browser, vp);
-  for (const vp of [VIEWPORTS[1], { name: 'mobile-orizzontale', width: 844, height: 390, isMobile: true }, { name: 'desktop-1280', width: 1280, height: 720, isMobile: false }, VIEWPORTS[0]]) await stableHeight(browser, vp);
+  const LAND = { name: 'mobile-orizzontale', width: 844, height: 390, isMobile: true };
+  const D1280 = { name: 'desktop-1280', width: 1280, height: 720, isMobile: false };
+  for (const vp of [{ name: 'mobile-320', width: 320, height: 568, isMobile: true }, VIEWPORTS[1], LAND, D1280, VIEWPORTS[0]]) await stableHeight(browser, vp);
+  for (const vp of [VIEWPORTS[1], VIEWPORTS[0]]) await stableHeight(browser, vp, { noFonts: true });
+  for (const vp of [{ name: 'mobile-320', width: 320, height: 568, isMobile: true }, { name: 'mobile-360', width: 360, height: 640, isMobile: true }, VIEWPORTS[1], LAND, D1280, VIEWPORTS[0]]) await wholeText(browser, vp);
+  for (const vp of [VIEWPORTS[1], VIEWPORTS[0]]) await riseNotClipped(browser, vp);
+  await heightOnlyResize(browser);
   await resizeNoCompensation(browser);
   await texts(browser);
   await browser.close();

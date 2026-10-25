@@ -3,6 +3,9 @@ import { req } from '../lib/dom';
 import { prefersReducedMotion } from '../lib/motion';
 import { MARKETS, MarketSim, mmss, type Status, type Task, type LogEntry } from './sim';
 
+/** Testi delle righe del log che non dipendono da un task (stepSim nel prototipo). */
+const SESSION_LOG = ['Sessione in chiusura', 'Sessione chiusa, esiti in arrivo', 'Nuova sessione aperta'];
+
 const PRIMA_MS = 5000;
 const TICK_MS = 100;
 const STEP_EVERY = 8; // un passo della simulazione ogni 800ms
@@ -24,6 +27,33 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: 
 
 function tag(mkt: string): HTMLSpanElement {
   return el('span', 'mkt-tag', mkt);
+}
+
+// Elementi della vista "Dopo": usati sia per disegnarla sia per misurare lo spazio da riservare.
+function queueTask(mkt: string, name: string): HTMLElement {
+  const n = el('div', 'task task--queue rise');
+  n.append(tag(mkt), el('span', 'task__name', name));
+  return n;
+}
+function runTask(mkt: string, name: string): HTMLElement {
+  const n = el('div', 'task task--run');
+  const line = el('span', 'task__line');
+  line.append(tag(mkt), el('span', 'task__name', name));
+  const bar = el('div', 'task__bar');
+  bar.setAttribute('aria-hidden', 'true');
+  bar.append(el('div', 'task__fill'));
+  n.append(line, bar);
+  return n;
+}
+function doneTask(mkt: string, name: string): HTMLElement {
+  const n = el('div', 'task task--done');
+  n.append(tag(mkt), el('span', 'task__name', `✓ ${name}`));
+  return n;
+}
+function logRow(time: string, mkt: string, text: string): HTMLElement {
+  const n = el('div', 'log__row');
+  n.append(el('span', 'log__time', time), tag(mkt), el('span', 'log__text', text));
+  return n;
 }
 
 /** Riusa i nodi già presenti (per id) e crea solo quelli nuovi, così le animazioni d'ingresso partono solo sui nuovi. */
@@ -121,7 +151,7 @@ export function initCase(assemble: AssembleController): void {
     body.append(list, empty);
     col.append(el('div', 'col__title', title), body);
     cols.append(col);
-    return { list, empty };
+    return { body, list, empty };
   };
   const qCol = mkCol('In coda', 'queue');
   const rCol = mkCol('In esecuzione', 'run');
@@ -154,33 +184,84 @@ export function initCase(assemble: AssembleController): void {
 
   const PILL: Record<Status, string> = { 'In chiusura': 'is-closing', Aperto: 'is-open', 'Esiti in arrivo': 'is-results' };
 
+  // ---- Spazio riservato: in "Dopo" l'altezza non cambia mentre la simulazione gira ----
+  // I testi vanno a capo come nel prototipo; per ogni zona si riserva l'altezza del caso peggiore,
+  // misurata con gli stessi elementi in un contenitore invisibile, alla larghezza attuale.
+  const measurer = el('div', 'case-measure');
+  measurer.setAttribute('aria-hidden', 'true');
+  dopo.append(measurer);
+  const tallest = (width: number, nodes: HTMLElement[]): number => {
+    measurer.style.width = `${width}px`;
+    let max = 0;
+    for (const n of nodes) {
+      measurer.replaceChildren(n);
+      max = Math.max(max, n.getBoundingClientRect().height);
+    }
+    measurer.replaceChildren();
+    return max;
+  };
+  const pairs = MARKETS.flatMap((m) => m.tasks.map((t) => [m.id, t] as const));
+  const logTexts = [
+    ...pairs.flatMap(([id, t]) => [[id, `${t} · avviato`], [id, `${t} · completato`]] as const),
+    ...MARKETS.flatMap((m) => SESSION_LOG.map((t) => [m.id, t] as const)),
+  ];
+  const GAP = 8, LOG_GAP = 6;
+  let measuredFor = '';
+
+  function reserveSpace(): void {
+    const widths = [qCol.list, rCol.list, dCol.list, logList, tasksHead, cards[0].b].map((x) => x.clientWidth);
+    if (widths.some((w) => w === 0)) return; // vista "Dopo" nascosta: si misura quando compare
+    const key = widths.join(',');
+    if (key === measuredFor) return;
+    measuredFor = key;
+    const [qw, rw, dw, lw, hw, cw] = widths;
+    const tq = tallest(qw, pairs.map(([id, t]) => queueTask(id, t)));
+    const tr = tallest(rw, pairs.map(([id, t]) => runTask(id, t)));
+    const td = tallest(dw, pairs.map(([id, t]) => doneTask(id, t)));
+    qCol.body.style.minHeight = `${4 * tq + 3 * GAP}px`;
+    rCol.body.style.minHeight = `${3 * tr + 2 * GAP}px`;
+    dCol.body.style.minHeight = `${4 * td + 3 * GAP}px`;
+    const tl = tallest(lw, logTexts.map(([id, t]) => logRow('09:12:00', id, t)));
+    logList.style.minHeight = `${7 * tl + 6 * LOG_GAP}px`;
+    // Intestazione con il titolo più lungo e il pulsante visibile.
+    const head = el('div', 'panel__head');
+    const btn = el('span', 'chip-btn', 'Mostra tutti i mercati');
+    head.append(el('span', 'panel__title', 'Task · tutti i mercati'), btn);
+    tasksHead.style.minHeight = `${tallest(hw, [head])}px`;
+    // Card mercato: i tre stati, conto alla rovescia e contatore più larghi.
+    const cardVariants = MARKETS.flatMap((m) => (['Aperto', 'In chiusura', 'Esiti in arrivo'] as Status[]).map((st) => {
+      const b = el('div', 'mkt');
+      const top = el('span', 'mkt__top');
+      top.append(el('span', 'mkt__id', m.id), el('span', `mkt__pill ${PILL[st]}`, st));
+      const done = el('span', 'mkt__done');
+      done.append(el('b', undefined, '888'), document.createTextNode(' task eseguiti oggi'));
+      const bar = el('span', 'mkt__bar');
+      bar.append(el('span', 'mkt__fill'));
+      b.append(top, el('span', 'mkt__name', m.name), el('span', 'mkt__timer', `${st === 'Esiti in arrivo' ? 'riapre tra' : 'chiude tra'} 88:88`), bar, done);
+      return b;
+    }));
+    const tc = tallest(cw, cardVariants);
+    for (const c of cards) c.b.style.minHeight = `${tc}px`;
+  }
+
+  // Si rimisura quando cambia la larghezza (non a ogni passo) e quando arrivano i font definitivi.
+  new ResizeObserver(() => reserveSpace()).observe(dopo);
+  document.fonts.ready.then(() => {
+    measuredFor = '';
+    reserveSpace();
+  });
+
+
   function renderTasks(): void {
     const keep = (t: Task) => filter === 'all' || t.mkt === filter;
     const q = sim.queue.filter(keep).slice(0, 4);
     const r = sim.run.filter(keep);
     const d = sim.done.filter(keep).slice(0, 4);
-    reconcile(qCol.list, q, (t) => {
-      const n = el('div', 'task task--queue rise');
-      n.append(tag(t.mkt), el('span', 'task__name', t.name));
-      return n;
-    }, () => {});
-    reconcile(rCol.list, r, (t) => {
-      const n = el('div', 'task task--run');
-      const line = el('span', 'task__line');
-      line.append(tag(t.mkt), el('span', 'task__name', t.name));
-      const bar = el('div', 'task__bar');
-      bar.setAttribute('aria-hidden', 'true');
-      bar.append(el('div', 'task__fill'));
-      n.append(line, bar);
-      return n;
-    }, (n, t) => {
+    reconcile(qCol.list, q, (t) => queueTask(t.mkt, t.name), () => {});
+    reconcile(rCol.list, r, (t) => runTask(t.mkt, t.name), (n, t) => {
       (n.querySelector('.task__fill') as HTMLElement).style.transform = `scaleX(${Math.round(t.p) / 100})`;
     });
-    reconcile(dCol.list, d, (t) => {
-      const n = el('div', 'task task--done');
-      n.append(tag(t.mkt), el('span', 'task__name', `✓ ${t.name}`));
-      return n;
-    }, (n, t) => n.classList.toggle('is-fresh', t.fresh > 0));
+    reconcile(dCol.list, d, (t) => doneTask(t.mkt, t.name), (n, t) => n.classList.toggle('is-fresh', t.fresh > 0));
     qCol.empty.hidden = q.length > 0;
     rCol.empty.hidden = r.length > 0;
     dCol.empty.hidden = d.length > 0;
@@ -203,11 +284,7 @@ export function initCase(assemble: AssembleController): void {
     // Nascosto con visibility: tiene il suo spazio (l'intestazione non cambia altezza) ed esce da Tab e screen reader.
     showAll.classList.toggle('is-off', filter === 'all');
     renderTasks();
-    reconcile(logList, sim.log, (e: LogEntry) => {
-      const n = el('div', 'log__row');
-      n.append(el('span', 'log__time', e.time), tag(e.mkt), el('span', 'log__text', e.text));
-      return n;
-    }, (n, e) => n.classList.toggle('is-fresh', e.fresh > 0));
+    reconcile(logList, sim.log, (e: LogEntry) => logRow(e.time, e.mkt, e.text), (n, e) => n.classList.toggle('is-fresh', e.fresh > 0));
     sim.bars.forEach((v, i) => {
       bars[i].style.transform = `scaleY(${Math.round((v / 12) * 100) / 100})`;
       bars[i].classList.toggle('is-last', i === sim.bars.length - 1);
@@ -295,30 +372,24 @@ export function initCase(assemble: AssembleController): void {
   // In ogni caso i blocchi a cubi vengono rivalutati, così nessuno resta invisibile.
   let lastScrollY = window.scrollY;
   window.addEventListener('scroll', () => { lastScrollY = window.scrollY; }, { passive: true });
-  // Con un resize o una rotazione si ridispone tutta la pagina, non solo la dashboard: lì non si
-  // compensa e si lascia fare al browser. Il segnale resta acceso fino ai callback del frame dopo.
-  let viewportChanged = false;
-  let vw = window.innerWidth, vh = window.innerHeight;
-  window.addEventListener('resize', () => {
-    viewportChanged = true;
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      viewportChanged = false;
-      vw = window.innerWidth;
-      vh = window.innerHeight;
-    }));
-  });
+  // L'altezza della dashboard dipende solo dalla sua larghezza. Se la larghezza è cambiata dall'ultimo
+  // callback (resize, rotazione) si ridispone tutta la pagina: lì non si compensa e si lascia fare al browser.
+  // Un cambio della sola altezza della finestra (barra degli indirizzi mobile) non conta.
   let boardH = board.offsetHeight;
+  let boardW = board.offsetWidth;
   new ResizeObserver(() => {
     const h = board.offsetHeight;
+    const w = board.offsetWidth;
     const delta = h - boardH;
+    const widthChanged = w !== boardW;
     boardH = h;
+    boardW = w;
     if (delta === 0) return;
     const r = board.getBoundingClientRect();
     const anchored = window.scrollY - lastScrollY;
     // Dov'era il fondo della dashboard prima del cambio, rispetto allo schermo.
     const oldBottom = r.top + anchored + (h - delta);
-    const resized = viewportChanged || window.innerWidth !== vw || window.innerHeight !== vh;
-    if (!resized && oldBottom <= 0) {
+    if (!widthChanged && oldBottom <= 0) {
       const missing = delta - anchored;
       if (Math.abs(missing) >= 1) window.scrollBy({ top: missing, behavior: 'instant' });
     }
