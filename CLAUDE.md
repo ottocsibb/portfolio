@@ -15,8 +15,10 @@ Il design approvato è in `design/prototype.dc.html`. È un file di Claude Desig
 ## Stack e pubblicazione
 
 - Sito statico: **Vite + TypeScript**, senza framework. Le animazioni sono imperative e non servono componenti.
-- Pubblicazione su **GitHub Pages** tramite GitHub Actions, dal branch `main`.
-- Il repository si chiama `portfolio`, quindi il sito vive su `https://ottocsibb.github.io/portfolio/`. In Vite va impostato `base: '/portfolio/'`.
+- Pubblicazione su **Vercel**, collegato al repository GitHub: ogni push su `main` va in produzione, ogni PR ha un link di anteprima.
+- Indirizzo del sito: `https://mariano-demagistris-portfolio.vercel.app`.
+- In Vite `base: '/'`.
+- Su Vercel non attivare Web Analytics né Speed Insights.
 - Font **in locale**, con `@fontsource` o file `woff2` nel repo, **non** da Google Fonts: in UE è una questione di privacy.
 - Nessun cookie, nessun tracciamento. Se in futuro serviranno statistiche, solo strumenti senza cookie.
 

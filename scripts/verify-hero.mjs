@@ -9,7 +9,7 @@ const require = createRequire(import.meta.url);
 const { chromium } = require(process.env.PLAYWRIGHT_PATH ?? 'playwright');
 
 const PORT = 4180;
-const URL = `http://localhost:${PORT}/portfolio/`;
+const URL = `http://localhost:${PORT}/`;
 const OUT = '.verify/hero';
 const SHOTS = [1000, 3000, 4500, 6500, 9000];
 
