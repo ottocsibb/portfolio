@@ -43,6 +43,10 @@ const INSTRUMENT = () => {
   const ci = window.clearInterval.bind(window);
   window.setInterval = (...a) => { const id = si(...a); window.__intervals.add(id); return id; };
   window.clearInterval = (id) => { window.__intervals.delete(id); ci(id); };
+  // scrollBy chiamati dalla pagina (la compensazione dello scroll del caso studio).
+  window.__scrollBy = 0;
+  const sb = window.scrollBy.bind(window);
+  window.scrollBy = (...a) => { window.__scrollBy++; return sb(...a); };
   window.__tileProps = new Set();
   const parse = (css) => new Map((css ?? '').split(';').map((d) => d.split(':')).filter((p) => p.length > 1).map(([k, ...v]) => [k.trim(), v.join(':').trim()]));
   document.addEventListener('DOMContentLoaded', () => {
@@ -388,7 +392,7 @@ async function caseStudy(browser, vp) {
     pressed: document.querySelector('.mkt').getAttribute('aria-pressed'),
     title: document.querySelector('.panel__title').textContent,
     tags: [...document.querySelectorAll('.cols .mkt-tag')].map((t) => t.textContent),
-    showAll: !document.querySelector('.chip-btn').hidden,
+    showAll: !document.querySelector('.chip-btn').classList.contains('is-off') && getComputedStyle(document.querySelector('.chip-btn')).visibility === 'visible',
   }));
   await page.evaluate(() => document.querySelector('.mkts').scrollIntoView({ block: 'start' }));
   await page.evaluate(() => window.scrollBy(0, -100));
@@ -400,8 +404,8 @@ async function caseStudy(browser, vp) {
   check(f.pressed === 'false' && f.title === 'Task · tutti i mercati', 'secondo clic sulla stessa card: tutti i mercati');
   await page.locator('.mkt', { hasText: 'MSD' }).click();
   await page.click('.chip-btn');
-  f = await page.evaluate(() => ({ title: document.querySelector('.panel__title').textContent, any: [...document.querySelectorAll('.mkt')].some((m) => m.getAttribute('aria-pressed') === 'true') }));
-  check(f.title === 'Task · tutti i mercati' && !f.any, '"Mostra tutti i mercati" toglie il filtro');
+  f = await page.evaluate(() => ({ title: document.querySelector('.panel__title').textContent, any: [...document.querySelectorAll('.mkt')].some((m) => m.getAttribute('aria-pressed') === 'true'), vis: getComputedStyle(document.querySelector('.chip-btn')).visibility }));
+  check(f.title === 'Task · tutti i mercati' && !f.any && f.vis === 'hidden', `"Mostra tutti i mercati" toglie il filtro e si nasconde (visibility ${f.vis}: fuori da Tab e screen reader)`);
 
   // Tastiera.
   await page.focus('[data-case-view="prima"]');
@@ -547,6 +551,7 @@ async function autoReturnShift(browser) {
     t1: document.querySelector('[data-asm="t1"]').getBoundingClientRect().top,
   }));
   check(after.view === 'prima' && after.h < before.h - 200, `scatta il ritorno a "Prima" (dashboard ${before.h} → ${after.h}px)`);
+  check((await page.evaluate(() => window.__scrollBy)) >= 1, 'qui la compensazione interviene (scrollBy chiamato)');
   check(Math.abs(after.t1 - before.t1) <= 2, `la card t1 resta ferma sullo schermo (${Math.round(before.t1)} → ${Math.round(after.t1)}px)`);
   await sleep(page, 1700);
   const waiting = await zoneWaiting(page);
@@ -627,6 +632,93 @@ async function manualToggleShift(browser, vp) {
   await ctx.close();
 }
 
+/** In "Dopo" l'altezza della dashboard resta fissa durante la simulazione, filtro compreso; la didascalia sotto non si muove. */
+async function stableHeight(browser, vp) {
+  console.log(`\n${vp.width}×${vp.height} · altezza della dashboard in "Dopo"`);
+  const { ctx, page, errors } = await newPage(browser, vp);
+  await page.goto(URL, { waitUntil: 'networkidle' });
+  await sleep(page, 300);
+  await boardTo(page, 1);
+  await sleep(page, 1700);
+  await page.evaluate(() => document.querySelector('[data-case-view="dopo"]').click());
+  await sleep(page, 200);
+  // Dashboard parzialmente sullo schermo, didascalia visibile sotto.
+  await placeTop(page, '[data-case-caption]', 0.6);
+  await sleep(page, 300);
+  const samples = await page.evaluate(async () => {
+    const board = document.querySelector('[data-case-board]');
+    const cap = document.querySelector('[data-case-caption]');
+    const out = [];
+    const t0 = performance.now();
+    let filtered = false, cleared = false;
+    while (performance.now() - t0 < 12000) {
+      const t = performance.now() - t0;
+      if (!filtered && t > 4000) { [...document.querySelectorAll('.mkt')].find((m) => m.textContent.includes('GAS')).click(); filtered = true; }
+      if (!cleared && t > 8000) { document.querySelector('.chip-btn').click(); cleared = true; }
+      out.push({ h: board.getBoundingClientRect().height, cap: cap.getBoundingClientRect().top, boardTop: board.getBoundingClientRect().top });
+      await new Promise((r) => setTimeout(r, 100));
+    }
+    return out;
+  });
+  const hs = [...new Set(samples.map((s) => Math.round(s.h * 10) / 10))];
+  const caps = samples.map((s) => s.cap);
+  const capRange = Math.max(...caps) - Math.min(...caps);
+  const partly = samples[0].boardTop < 0 && samples[0].cap < vp.height;
+  check(samples.length >= 100 && hs.length === 1, `altezza fissa per 12 s di simulazione, filtro GAS e "Mostra tutti" compresi (${hs.join(' / ')}px, ${samples.length} campioni)`);
+  check(partly && capRange <= 1, `didascalia ferma con la dashboard parzialmente visibile (scarto ${capRange.toFixed(1)}px)`);
+  const lay = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
+  check(lay <= 0, 'nessuno scroll orizzontale della pagina');
+  if (vp.width === 390 || vp.width === 1440) {
+    await boardTo(page, 1);
+    await sleep(page, 400);
+    await page.screenshot({ path: `${OUT}/${vp.width === 390 ? 'mobile' : 'desktop'}-dopo-10s.png` });
+    if (vp.width === 390) {
+      // Su mobile i testi con i puntini stanno nella board e nel log, più in basso.
+      await page.evaluate(() => { document.querySelector('.panel--tasks').scrollIntoView({ block: 'start' }); window.scrollBy(0, -100); });
+      await sleep(page, 400);
+      await page.screenshot({ path: `${OUT}/mobile-dopo-10s-task.png` });
+      await page.evaluate(() => { document.querySelector('.log').scrollIntoView({ block: 'center' }); });
+      await sleep(page, 400);
+      await page.screenshot({ path: `${OUT}/mobile-dopo-10s-eventi.png` });
+    }
+  }
+  check(errors.length === 0, 'nessun errore in console');
+  await ctx.close();
+}
+
+/** Resize e rotazione con la dashboard sopra lo schermo: nessuna compensazione, nessun blocco invisibile. */
+async function resizeNoCompensation(browser) {
+  console.log('\nresize e rotazione con la dashboard sopra lo schermo');
+  const cases = [
+    { from: VIEWPORTS[1], to: { width: 844, height: 390 }, label: 'rotazione 390×844 → 844×390 → 390×844' },
+    { from: VIEWPORTS[0], to: { width: 480, height: 900 }, label: 'resize 1440×900 → 480×900 → 1440×900' },
+  ];
+  for (const c of cases) {
+    const { ctx, page, errors } = await newPage(browser, c.from);
+    await page.goto(URL, { waitUntil: 'networkidle' });
+    await sleep(page, 300);
+    await page.evaluate(() => { const b = document.querySelector('[data-case-board]'); scrollTo(0, scrollY + b.getBoundingClientRect().bottom + 300); });
+    await sleep(page, 1800);
+    const n0 = await page.evaluate(() => window.__scrollBy);
+    const h0 = await page.evaluate(() => document.querySelector('[data-case-board]').offsetHeight);
+    await page.setViewportSize(c.to);
+    await sleep(page, 800);
+    const h1 = await page.evaluate(() => document.querySelector('[data-case-board]').offsetHeight);
+    const n1 = await page.evaluate(() => window.__scrollBy);
+    await sleep(page, 1700);
+    const w1 = await zoneWaiting(page);
+    await page.setViewportSize({ width: c.from.width, height: c.from.height });
+    await sleep(page, 800);
+    const n2 = await page.evaluate(() => window.__scrollBy);
+    await sleep(page, 1700);
+    const w2 = await zoneWaiting(page);
+    check(h1 !== h0 && n1 === n0 && n2 === n0, `${c.label}: la dashboard cambia altezza (${h0} → ${h1}px) ma nessuno scrollBy di compensazione (${n2 - n0})`);
+    check(w1.length === 0 && w2.length === 0, `nessun blocco invisibile nella zona dell'88%${[...w1, ...w2].length ? ' — ' + [...w1, ...w2].join(', ') : ''}`);
+    check(errors.length === 0, 'nessun errore in console');
+    await ctx.close();
+  }
+}
+
 // ---------------- Riduci movimento ----------------
 
 async function reduced(browser, vp) {
@@ -673,6 +765,8 @@ try {
   await autoReturnShift(browser);
   await filterShift(browser);
   for (const vp of VIEWPORTS) await manualToggleShift(browser, vp);
+  for (const vp of [VIEWPORTS[1], { name: 'mobile-orizzontale', width: 844, height: 390, isMobile: true }, { name: 'desktop-1280', width: 1280, height: 720, isMobile: false }, VIEWPORTS[0]]) await stableHeight(browser, vp);
+  await resizeNoCompensation(browser);
   await texts(browser);
   await browser.close();
 } finally {

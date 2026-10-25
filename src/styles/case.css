@@ -74,12 +74,12 @@
 .is-entering .mkt { animation: rise 450ms ease both; animation-delay: var(--d, 0ms); }
 .mkt__top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .mkt__id { font-family: var(--f-display); font-size: 22px; line-height: 1; font-weight: 800; }
-.mkt__pill { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; }
+.mkt__pill { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
 .mkt__pill.is-open { background: var(--c-track); color: var(--c-night); }
 .mkt__pill.is-closing { background: var(--c-accent); color: var(--c-night); }
 .mkt__pill.is-results { background: var(--c-night); color: var(--c-white); }
 .mkt__name { font-size: 13px; color: var(--c-text-2); }
-.mkt__timer { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.mkt__timer { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .mkt__bar { display: block; height: 4px; background: var(--c-track); border-radius: 2px; overflow: hidden; }
 .mkt__fill {
   display: block;
@@ -89,7 +89,7 @@
   transition: transform 800ms linear;
 }
 .mkt__fill.is-closing { background: var(--c-accent); }
-.mkt__done { font-size: 12px; color: var(--c-text-2); }
+.mkt__done { font-size: 12px; color: var(--c-text-2); white-space: nowrap; }
 .mkt__done b { color: var(--c-night); }
 
 .dopo__row { display: flex; flex-wrap: wrap; gap: 12px; }
@@ -106,7 +106,10 @@
 .dopo__side { flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
 .is-entering .dopo__side { animation: rise 500ms ease both; animation-delay: 450ms; }
 .dopo__side .panel + .panel { gap: 8px; }
-.panel__head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; }
+/* Intestazione sempre alta quanto il pulsante "Mostra tutti i mercati" (12px × 1,6 + padding 12px + bordo 2px),
+   su una riga sola: l'altezza non cambia quando il pulsante compare o sparisce. */
+.panel__head { position: relative; display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: calc(12px * 1.6 + 14px); }
+.panel__head .panel__title { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .panel__title, .panel__label { font-size: 13px; font-weight: 700; }
 .panel__label { color: var(--c-text-2); }
 .chip-btn {
@@ -119,27 +122,45 @@
   border-radius: 999px;
   padding: 6px 12px;
   min-height: 32px;
+  flex: none;
+  white-space: nowrap;
   cursor: pointer;
 }
-.chip-btn[hidden] { display: none; }
+/* Nascosto: fuori dal flusso, dal Tab e dagli screen reader (visibility), senza togliere altezza. */
+.chip-btn.is-off { visibility: hidden; position: absolute; right: 0; }
 
 /* La board scorre in orizzontale al suo interno, mai la pagina. */
 .cols { display: flex; gap: 10px; overflow-x: auto; }
 .col { flex: 1 0 150px; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+/* In "Dopo" l'altezza della dashboard resta fissa: ogni task è alto una riga e ogni colonna
+   riserva lo spazio per il massimo di task che può mostrare (4 in coda, 3 in esecuzione, 4 eseguiti). */
+.col__body { position: relative; font-size: 13px; }
+.col--queue .col__body, .col--done .col__body { min-height: calc(4 * (1.6em + 16px) + 3 * 8px); }
+.col--run .col__body { min-height: calc(3 * (1.6em + 30px) + 2 * 8px); }
 .col__list { display: flex; flex-direction: column; gap: 8px; }
 .col__title { font-size: 13px; font-weight: 700; color: var(--c-text-2); }
 .col--run .col__title { color: var(--c-blue); }
 .col--done .col__title { color: var(--c-accent-dark); }
-.col__empty { font-size: 13px; color: var(--c-text-2); }
+.col__empty { position: absolute; top: 0; left: 0; font-size: 13px; color: var(--c-text-2); }
 .col__empty[hidden] { display: none; }
 
 .mkt-tag { flex: none; font-size: 10px; font-weight: 800; border: 1px solid var(--c-blue); border-radius: 4px; padding: 0 4px; }
-.task { border-radius: 8px; padding: 8px 10px; font-size: 13px; display: flex; gap: 6px; align-items: baseline; }
-.task__name { min-width: 0; }
+.task {
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  line-height: 1.6;
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  height: calc(1.6em + 16px);
+}
+/* Nomi su una riga sola, con i puntini se non ci stanno; il testo completo resta nel DOM. */
+.task__name { flex: 1 1 auto; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .task--queue { background: var(--c-page); }
 .task.rise { animation: rise 400ms ease both; }
-.task--run { background: var(--c-white); border: 1.5px solid var(--c-blue); flex-direction: column; align-items: stretch; }
-.task__line { display: flex; gap: 6px; align-items: baseline; }
+.task--run { background: var(--c-white); border: 1.5px solid var(--c-blue); flex-direction: column; align-items: stretch; height: calc(1.6em + 30px); }
+.task__line { display: flex; gap: 6px; align-items: baseline; min-width: 0; }
 .task__bar { height: 5px; background: var(--c-track); border-radius: 3px; overflow: hidden; }
 .task__fill { height: 5px; background: var(--c-blue); transform-origin: left center; transform: scaleX(0); transition: transform 700ms ease; }
 
@@ -158,10 +179,11 @@
 }
 .task--done.is-fresh::before, .log__row.is-fresh::before { opacity: 1; }
 
-.log { display: flex; flex-direction: column; gap: 6px; }
-.log__row { display: flex; gap: 8px; align-items: baseline; font-size: 12.5px; padding: 5px 8px; border-radius: 6px; }
+/* Spazio sempre per 7 eventi, ognuno su una riga sola. */
+.log { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; line-height: 1.6; min-height: calc(7 * (1.6em + 10px) + 6 * 6px); }
+.log__row { display: flex; gap: 8px; align-items: baseline; padding: 5px 8px; border-radius: 6px; height: calc(1.6em + 10px); }
 .log__time { flex: none; font-variant-numeric: tabular-nums; color: var(--c-text-2); font-weight: 600; }
-.log__text { min-width: 0; }
+.log__text { flex: 1 1 auto; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 
 .chart { height: 64px; display: flex; align-items: flex-end; gap: 4px; }
 .chart__bar {

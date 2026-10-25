@@ -114,9 +114,12 @@ export function initCase(assemble: AssembleController): void {
   const cols = el('div', 'cols');
   const mkCol = (title: string, mod: string) => {
     const col = el('div', `col col--${mod}`);
+    // Spazio riservato per il numero massimo di task della colonna: l'altezza non cambia a ogni passo.
+    const body = el('div', 'col__body');
     const list = el('div', 'col__list');
     const empty = el('div', 'col__empty', 'Nessun task');
-    col.append(el('div', 'col__title', title), list, empty);
+    body.append(list, empty);
+    col.append(el('div', 'col__title', title), body);
     cols.append(col);
     return { list, empty };
   };
@@ -197,7 +200,8 @@ export function initCase(assemble: AssembleController): void {
       c.b.classList.toggle('is-selected', on);
     }
     tasksTitle.textContent = `Task · ${filter === 'all' ? 'tutti i mercati' : filter}`;
-    showAll.hidden = filter === 'all';
+    // Nascosto con visibility: tiene il suo spazio (l'intestazione non cambia altezza) ed esce da Tab e screen reader.
+    showAll.classList.toggle('is-off', filter === 'all');
     renderTasks();
     reconcile(logList, sim.log, (e: LogEntry) => {
       const n = el('div', 'log__row');
@@ -291,6 +295,18 @@ export function initCase(assemble: AssembleController): void {
   // In ogni caso i blocchi a cubi vengono rivalutati, così nessuno resta invisibile.
   let lastScrollY = window.scrollY;
   window.addEventListener('scroll', () => { lastScrollY = window.scrollY; }, { passive: true });
+  // Con un resize o una rotazione si ridispone tutta la pagina, non solo la dashboard: lì non si
+  // compensa e si lascia fare al browser. Il segnale resta acceso fino ai callback del frame dopo.
+  let viewportChanged = false;
+  let vw = window.innerWidth, vh = window.innerHeight;
+  window.addEventListener('resize', () => {
+    viewportChanged = true;
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      viewportChanged = false;
+      vw = window.innerWidth;
+      vh = window.innerHeight;
+    }));
+  });
   let boardH = board.offsetHeight;
   new ResizeObserver(() => {
     const h = board.offsetHeight;
@@ -301,7 +317,8 @@ export function initCase(assemble: AssembleController): void {
     const anchored = window.scrollY - lastScrollY;
     // Dov'era il fondo della dashboard prima del cambio, rispetto allo schermo.
     const oldBottom = r.top + anchored + (h - delta);
-    if (oldBottom <= 0) {
+    const resized = viewportChanged || window.innerWidth !== vw || window.innerHeight !== vh;
+    if (!resized && oldBottom <= 0) {
       const missing = delta - anchored;
       if (Math.abs(missing) >= 1) window.scrollBy({ top: missing, behavior: 'instant' });
     }
