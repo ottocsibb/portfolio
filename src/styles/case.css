@@ -1,0 +1,191 @@
+@keyframes rise { from { transform: translateY(14px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes blink { 50% { opacity: .25; } }
+@keyframes bubble {
+  0% { transform: translateY(10px) scale(.9); opacity: 0; }
+  15% { transform: none; opacity: 1; }
+  85% { transform: none; opacity: 1; }
+  100% { transform: translateY(-6px); opacity: 0; }
+}
+/* Anello del LIVE: nel prototipo è un box-shadow che si allarga; qui un cerchio che cresce e sfuma. */
+@keyframes live-ring { from { transform: scale(1); opacity: .55; } to { transform: scale(3.2); opacity: 0; } }
+
+/* Fuori schermo o a scheda nascosta le animazioni del caso studio restano ferme. */
+.case.is-paused *, .case.is-paused *::before, .case.is-paused *::after { animation-play-state: paused !important; }
+
+/* ---- Prima ---- */
+.silo__q { animation: blink 1.6s ease-in-out infinite; animation-delay: var(--d, 0ms); }
+.is-entering .silo { animation: rise 450ms ease both; animation-delay: var(--d, 0ms); }
+
+.bubble {
+  position: absolute;
+  max-width: 260px;
+  background: var(--c-night);
+  color: var(--c-white);
+  border-radius: 14px 14px 14px 4px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 10px 24px rgba(20, 33, 61, 0.25);
+  opacity: 0;
+  pointer-events: none;
+  animation: bubble 6s ease-in-out infinite;
+  animation-delay: var(--d, 0ms);
+}
+
+/* ---- Intestazione della dashboard ---- */
+.board__live {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--c-accent-dark);
+}
+.board__live[hidden], .board__state[hidden] { display: none; }
+.live-dot { position: relative; width: 9px; height: 9px; border-radius: 50%; background: var(--c-accent); }
+.live-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--c-accent);
+  animation: live-ring 1.4s ease-out infinite;
+}
+
+/* ---- Dopo ---- */
+.dopo { display: flex; flex-direction: column; gap: 12px; }
+.dopo[hidden] { display: none; }
+
+.mkts { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.mkt {
+  text-align: left;
+  border: 2px solid transparent;
+  background: var(--c-white);
+  border-radius: 14px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.mkt.is-selected { border-color: var(--c-night); }
+.is-entering .mkt { animation: rise 450ms ease both; animation-delay: var(--d, 0ms); }
+.mkt__top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.mkt__id { font-family: var(--f-display); font-size: 22px; line-height: 1; font-weight: 800; }
+.mkt__pill { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; }
+.mkt__pill.is-open { background: var(--c-track); color: var(--c-night); }
+.mkt__pill.is-closing { background: var(--c-accent); color: var(--c-night); }
+.mkt__pill.is-results { background: var(--c-night); color: var(--c-white); }
+.mkt__name { font-size: 13px; color: var(--c-text-2); }
+.mkt__timer { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.mkt__bar { display: block; height: 4px; background: var(--c-track); border-radius: 2px; overflow: hidden; }
+.mkt__fill {
+  display: block;
+  height: 4px;
+  background: var(--c-blue);
+  transform-origin: left center;
+  transition: transform 800ms linear;
+}
+.mkt__fill.is-closing { background: var(--c-accent); }
+.mkt__done { font-size: 12px; color: var(--c-text-2); }
+.mkt__done b { color: var(--c-night); }
+
+.dopo__row { display: flex; flex-wrap: wrap; gap: 12px; }
+.panel {
+  background: var(--c-white);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.panel--tasks { flex: 2 1 460px; min-width: 0; gap: 10px; }
+.is-entering .panel--tasks { animation: rise 500ms ease both; animation-delay: 300ms; }
+.dopo__side { flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+.is-entering .dopo__side { animation: rise 500ms ease both; animation-delay: 450ms; }
+.dopo__side .panel + .panel { gap: 8px; }
+.panel__head { position: relative; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; }
+.panel__title, .panel__label { font-size: 13px; font-weight: 700; }
+.panel__label { color: var(--c-text-2); }
+.chip-btn {
+  border: 1px solid var(--c-border);
+  background: var(--c-white);
+  color: var(--c-night);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 6px 12px;
+  min-height: 32px;
+  cursor: pointer;
+}
+/* Nascosto: fuori dal flusso, dal Tab, dagli screen reader e dai clic (visibility). L'altezza
+   dell'intestazione è riservata da case.ts per il caso con il pulsante visibile. */
+.chip-btn.is-off { visibility: hidden; position: absolute; right: 0; top: 0; }
+
+/* La board scorre in orizzontale al suo interno, mai la pagina. I 14px sotto le colonne fanno
+   spazio all'ingresso dei task (rise sale da 14px più in basso), che altrimenti verrebbe tagliato. */
+.cols { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 14px; }
+.col { flex: 1 0 150px; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+/* Altezza minima di ogni colonna impostata da case.ts sul caso peggiore (4 / 3 / 4 task). */
+.col__body { position: relative; }
+.col__list { display: flex; flex-direction: column; gap: 8px; }
+.col__title { font-size: 13px; font-weight: 700; color: var(--c-text-2); }
+.col--run .col__title { color: var(--c-blue); }
+.col--done .col__title { color: var(--c-accent-dark); }
+.col__empty { position: absolute; top: 0; left: 0; font-size: 13px; color: var(--c-text-2); }
+.col__empty[hidden] { display: none; }
+
+.mkt-tag { flex: none; font-size: 10px; font-weight: 800; border: 1px solid var(--c-blue); border-radius: 4px; padding: 0 4px; }
+.task { border-radius: 8px; padding: 8px 10px; font-size: 13px; display: flex; gap: 6px; align-items: baseline; }
+.task__name { min-width: 0; }
+.task--queue { background: var(--c-page); }
+.task.rise { animation: rise 400ms ease both; }
+.task--run { background: var(--c-white); border: 1.5px solid var(--c-blue); flex-direction: column; align-items: stretch; }
+.task__line { display: flex; gap: 6px; align-items: baseline; }
+.task__bar { height: 5px; background: var(--c-track); border-radius: 3px; overflow: hidden; }
+.task__fill { height: 5px; background: var(--c-blue); transform-origin: left center; transform: scaleX(0); transition: transform 700ms ease; }
+
+/* Evidenziazione dei task e degli eventi appena arrivati: strato arancio chiaro che sfuma (900ms). */
+.task--done, .log__row { position: relative; isolation: isolate; }
+.task--done { background: var(--c-page); }
+.task--done::before, .log__row::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--c-accent-light);
+  opacity: 0;
+  transition: opacity 900ms ease;
+}
+.task--done.is-fresh::before, .log__row.is-fresh::before { opacity: 1; }
+
+/* Altezza minima del log impostata da case.ts sul caso peggiore (7 eventi). */
+.log { display: flex; flex-direction: column; gap: 6px; }
+.log__row { display: flex; gap: 8px; align-items: baseline; font-size: 12.5px; padding: 5px 8px; border-radius: 6px; }
+.log__time { flex: none; font-variant-numeric: tabular-nums; color: var(--c-text-2); font-weight: 600; }
+.log__text { min-width: 0; }
+
+/* Contenitore invisibile in cui case.ts misura i testi più lunghi alla larghezza delle colonne. */
+.case-measure {
+  position: absolute;
+  left: 0;
+  top: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.case-measure * { animation: none !important; }
+
+.chart { height: 64px; display: flex; align-items: flex-end; gap: 4px; }
+.chart__bar {
+  flex: 1;
+  height: 100%;
+  background: var(--c-blue);
+  border-radius: 3px 3px 0 0;
+  transform-origin: bottom center;
+  transition: transform 600ms ease;
+}
+.chart__bar.is-last { background: var(--c-accent); }

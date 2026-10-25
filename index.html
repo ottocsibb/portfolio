@@ -97,22 +97,23 @@
 </section>
 
 <section id="caso" class="case">
+  <div class="asm-overlay" data-asm-overlay aria-hidden="true"></div>
   <div class="case__inner">
-    <div class="case__head">
+    <div class="case__head" data-asm="caseHead" data-asm-color="var(--c-blue)" data-asm-delay="0">
       <div class="case__kicker">Caso studio · mercati energetici</div>
       <h2 class="h2">Una dashboard per sapere sempre cosa sta succedendo</h2>
       <p class="case__lead">Guarda la differenza tra prima e dopo il progetto.</p>
     </div>
 
     <div class="case__ctrl-wrap">
-      <div class="case__ctrl" role="group" aria-label="Confronta prima e dopo">
+      <div class="case__ctrl" data-asm="caseCtrl" data-asm-color="var(--c-blue)" data-asm-delay="0.05" role="group" aria-label="Confronta prima e dopo">
         <button type="button" class="case__toggle" data-case-view="prima" aria-pressed="true">Prima</button>
         <button type="button" class="case__toggle" data-case-view="dopo" aria-pressed="false">Dopo</button>
       </div>
       <div class="case__progress" aria-hidden="true" data-case-progress><div class="case__progress-bar" data-case-progress-bar></div></div>
     </div>
 
-    <div class="board" data-case-board>
+    <div class="board" data-case-board data-asm="caseBoard" data-asm-color="var(--c-white)" data-asm-delay="0.1">
       <div class="board__bar">
         <div class="board__title">
           <span class="board__dot" aria-hidden="true"></span>
@@ -126,61 +127,67 @@
 
       <div class="board__body" data-case-body>
         <div class="silos" data-case-prima>
-          <div class="silo">
+          <div class="silo" style="--d: 0ms">
             <div class="silo__head"><span class="silo__name">MGP</span><span class="silo__src">script notturni</span></div>
-            <div class="silo__task">Calcolo fabbisogno<span class="silo__q">?</span></div>
-            <div class="silo__task">Invio offerte<span class="silo__q">?</span></div>
-            <div class="silo__task">Acquisizione esiti<span class="silo__q">?</span></div>
+            <div class="silo__task">Calcolo fabbisogno<span class="silo__q" aria-hidden="true" style="--d: 0ms">?</span></div>
+            <div class="silo__task">Invio offerte<span class="silo__q" aria-hidden="true" style="--d: 400ms">?</span></div>
+            <div class="silo__task">Acquisizione esiti<span class="silo__q" aria-hidden="true" style="--d: 800ms">?</span></div>
           </div>
-          <div class="silo">
+          <div class="silo" style="--d: 120ms">
             <div class="silo__head"><span class="silo__name">MI</span><span class="silo__src">file condivisi</span></div>
-            <div class="silo__task">Ricalcolo fabbisogno<span class="silo__q">?</span></div>
-            <div class="silo__task">Invio offerte<span class="silo__q">?</span></div>
-            <div class="silo__task">Acquisizione esiti<span class="silo__q">?</span></div>
+            <div class="silo__task">Ricalcolo fabbisogno<span class="silo__q" aria-hidden="true" style="--d: 200ms">?</span></div>
+            <div class="silo__task">Invio offerte<span class="silo__q" aria-hidden="true" style="--d: 600ms">?</span></div>
+            <div class="silo__task">Acquisizione esiti<span class="silo__q" aria-hidden="true" style="--d: 1000ms">?</span></div>
           </div>
-          <div class="silo">
+          <div class="silo" style="--d: 240ms">
             <div class="silo__head"><span class="silo__name">MSD</span><span class="silo__src">portale esterno</span></div>
-            <div class="silo__task">Offerte di riserva<span class="silo__q">?</span></div>
-            <div class="silo__task">Verifica ordini<span class="silo__q">?</span></div>
-            <div class="silo__task">Acquisizione esiti<span class="silo__q">?</span></div>
+            <div class="silo__task">Offerte di riserva<span class="silo__q" aria-hidden="true" style="--d: 300ms">?</span></div>
+            <div class="silo__task">Verifica ordini<span class="silo__q" aria-hidden="true" style="--d: 700ms">?</span></div>
+            <div class="silo__task">Acquisizione esiti<span class="silo__q" aria-hidden="true" style="--d: 1100ms">?</span></div>
           </div>
-          <div class="silo">
+          <div class="silo" style="--d: 360ms">
             <div class="silo__head"><span class="silo__name">GAS</span><span class="silo__src">foglio Excel</span></div>
-            <div class="silo__task">Calcolo fabbisogno gas<span class="silo__q">?</span></div>
-            <div class="silo__task">Nomine<span class="silo__q">?</span></div>
-            <div class="silo__task">Acquisizione prezzi<span class="silo__q">?</span></div>
+            <div class="silo__task">Calcolo fabbisogno gas<span class="silo__q" aria-hidden="true" style="--d: 100ms">?</span></div>
+            <div class="silo__task">Nomine<span class="silo__q" aria-hidden="true" style="--d: 500ms">?</span></div>
+            <div class="silo__task">Acquisizione prezzi<span class="silo__q" aria-hidden="true" style="--d: 900ms">?</span></div>
           </div>
+          <div class="bubble" aria-hidden="true" style="left: 28%; top: 6%; --d: 300ms">Il fabbisogno di domani è già calcolato?</div>
+          <div class="bubble" aria-hidden="true" style="left: 58%; top: 48%; --d: 1800ms">Le offerte MGP sono partite o no?</div>
+          <div class="bubble" aria-hidden="true" style="left: 6%; top: 60%; --d: 3300ms">Chi segue la sessione MI adesso?</div>
+          <div class="bubble" aria-hidden="true" style="left: 40%; top: 80%; --d: 4800ms">Le nomine gas sono andate?</div>
         </div>
+        <div class="dopo" data-case-dopo hidden></div>
       </div>
     </div>
 
-    <p class="case__caption" aria-live="polite" data-case-caption>Prima: ogni mercato con i suoi strumenti e nessuno stato condiviso. Per sapere cosa stava girando bisognava chiedere in giro.</p>
+    <p class="case__caption" aria-live="polite" data-case-caption data-asm="caseCap" data-asm-color="var(--c-blue)" data-asm-delay="0.15">Prima: ogni mercato con i suoi strumenti e nessuno stato condiviso. Per sapere cosa stava girando bisognava chiedere in giro.</p>
   </div>
 </section>
 
 <section id="percorso" class="section section--percorso">
-  <div class="section__head">
+  <div class="asm-overlay" data-asm-overlay aria-hidden="true"></div>
+  <div class="section__head" data-asm="percHead" data-asm-color="var(--c-night)" data-asm-delay="0">
     <div class="kicker">Percorso</div>
     <h2 class="h2">Dal codice alla guida dei progetti</h2>
     <p class="section__lead">Sei anni in cui ogni ruolo ha aggiunto responsabilità senza toglierne: oggi seguo il cliente, guido il team e continuo a scrivere codice.</p>
   </div>
   <ol class="timeline">
-    <li class="card">
+    <li class="card" data-asm="t1" data-asm-color="var(--c-white)" data-asm-delay="0">
       <div class="card__meta">2020 – 2022 · Matrix Consulting Group</div>
       <h3 class="h3">Sviluppatore web</h3>
       <p class="card__text">Le basi: web application a microservizi in Java e Python, database Oracle e i primi rilasci in collaudo e produzione.</p>
     </li>
-    <li class="card">
+    <li class="card" data-asm="t2" data-asm-color="var(--c-white)" data-asm-delay="0.08">
       <div class="card__meta">2022 – 2023 · Matrix Consulting Group</div>
       <h3 class="h3">Senior Backend Developer</h3>
       <p class="card__text">Più autonomia tecnica: architettura con Spring Boot, batch e code Kafka, reperibilità 24/7 e analisi tecnica nelle gare d'appalto.</p>
     </li>
-    <li class="card">
+    <li class="card" data-asm="t3" data-asm-color="var(--c-white)" data-asm-delay="0.16">
       <div class="card__meta">2023 – 2025 · Matrix Consulting Group</div>
       <h3 class="h3">Task manager</h3>
       <p class="card__text">Il passo verso la gestione: rapporto con il cliente, stime di effort, responsabilità dei rilasci e guida dei junior.</p>
     </li>
-    <li class="card card--night">
+    <li class="card card--night" data-asm="t4" data-asm-color="var(--c-night)" data-asm-delay="0.24">
       <div class="card__meta">Dal 2025 · Mediacom</div>
       <h3 class="h3">Task Manager · Analyst · Senior BE Developer</h3>
       <p class="card__text">Tutto il percorso in un unico ruolo, dall'analisi al rilascio in produzione:</p>
@@ -192,7 +199,7 @@
       </ul>
     </li>
   </ol>
-  <ul class="skills" aria-label="Competenze">
+  <ul class="skills" aria-label="Competenze" data-asm="skills" data-asm-color="var(--c-chaos-1)" data-asm-delay="0">
     <li>Java</li>
     <li>Spring Boot</li>
     <li>Spring Batch</li>
@@ -209,24 +216,25 @@
 </section>
 
 <section id="progetti" class="section section--progetti">
-  <h2 class="h2">Altri progetti</h2>
+  <div class="asm-overlay" data-asm-overlay aria-hidden="true"></div>
+  <h2 class="h2" data-asm="projHead" data-asm-color="var(--c-night)" data-asm-delay="0">Altri progetti</h2>
   <div class="projects">
-    <article class="card">
+    <article class="card" data-asm="p1" data-asm-color="var(--c-white)" data-asm-delay="0">
       <div class="card__meta">Cliente</div>
       <h3 class="h3">Classificazione email con LLM</h3>
       <p class="card__text card__text--16">Smistamento automatico della posta in arrivo.</p>
     </article>
-    <article class="card">
+    <article class="card" data-asm="p2" data-asm-color="var(--c-white)" data-asm-delay="0.08">
       <div class="card__meta">Cliente</div>
       <h3 class="h3">Clustering semantico dei feedback</h3>
       <p class="card__text card__text--16">Raggruppa per significato i feedback degli operatori di un servizio idrico, con test A/B tra modelli di embedding ed export dei temi in Jira. Python, Streamlit, MongoDB.</p>
     </article>
-    <article class="card">
+    <article class="card" data-asm="p3" data-asm-color="var(--c-white)" data-asm-delay="0.16">
       <div class="card__meta card__meta--accent">Personale</div>
       <h3 class="h3">Gestionale del personale</h3>
       <p class="card__text card__text--16">Anagrafica dei dipendenti con commesse, timesheet settimanali, approvazioni per i manager e grafici su ore e costi. React, Fastify, Prisma, PostgreSQL.</p>
     </article>
-    <article class="card">
+    <article class="card" data-asm="p4" data-asm-color="var(--c-white)" data-asm-delay="0.24">
       <div class="card__meta card__meta--accent">Personale</div>
       <h3 class="h3">Classificatore semantico con LLM</h3>
       <p class="card__text card__text--16">Un knowledge graph 3D che collega note e parole per significato: embedding, comunità semantiche e spiegazioni in linguaggio naturale con LLM locali. React Three Fiber, pgvector, Ollama.</p>
@@ -235,22 +243,24 @@
 </section>
 
 <section id="servizi" class="section section--servizi">
+  <div class="asm-overlay" data-asm-overlay aria-hidden="true"></div>
   <div class="services">
-    <div class="services__head">
+    <div class="services__head" data-asm="servHead" data-asm-color="var(--c-night)" data-asm-delay="0">
       <h2 class="h2 h2--services">Per aziende e progetti privati</h2>
       <p>Seguo tutto il processo, o entro dove il progetto si è fermato.</p>
     </div>
     <div class="services__list">
-      <div class="service"><div class="service__title">Guida del team</div><div class="service__text">Task, priorità, avanzamento visibile.</div></div>
-      <div class="service"><div class="service__title">Analisi funzionale</div><div class="service__text">Requisiti chiari prima del codice.</div></div>
-      <div class="service"><div class="service__title">Sviluppo backend e AI</div><div class="service__text">Pipeline, LLM, automazioni.</div></div>
-      <div class="service"><div class="service__title">Consegna completa</div><div class="service__text">Test, documentazione, rilascio.</div></div>
+      <div class="service" data-asm="s1" data-asm-color="var(--c-track)" data-asm-delay="0"><div class="service__title">Guida del team</div><div class="service__text">Task, priorità, avanzamento visibile.</div></div>
+      <div class="service" data-asm="s2" data-asm-color="var(--c-track)" data-asm-delay="0.08"><div class="service__title">Analisi funzionale</div><div class="service__text">Requisiti chiari prima del codice.</div></div>
+      <div class="service" data-asm="s3" data-asm-color="var(--c-track)" data-asm-delay="0.16"><div class="service__title">Sviluppo backend e AI</div><div class="service__text">Pipeline, LLM, automazioni.</div></div>
+      <div class="service" data-asm="s4" data-asm-color="var(--c-track)" data-asm-delay="0.24"><div class="service__title">Consegna completa</div><div class="service__text">Test, documentazione, rilascio.</div></div>
     </div>
   </div>
 </section>
 
 <section id="contatti" class="section section--contatti">
-  <div class="contact">
+  <div class="asm-overlay" data-asm-overlay aria-hidden="true"></div>
+  <div class="contact" data-asm="contBox" data-asm-color="var(--c-accent)" data-asm-delay="0">
     <div class="contact__text">
       <h2 class="h2 h2--contact">Hai un'idea e non sai come realizzarla?</h2>
       <p>Parliamone.</p>

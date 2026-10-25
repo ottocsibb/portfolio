@@ -95,6 +95,10 @@ typography:
     fontFamily: "Inter, system-ui, sans-serif"
     fontSize: "11px"
     fontWeight: 600
+  tag:
+    fontFamily: "Inter, system-ui, sans-serif"
+    fontSize: "10px"
+    fontWeight: 800
   label:
     fontFamily: "Inter, system-ui, sans-serif"
     fontSize: "13px"
@@ -103,6 +107,7 @@ typography:
 rounded:
   hairline: "2px"
   dot: "3px"
+  tag: "4px"
   tile: "6px"
   task: "8px"
   logo-brick: "9px"
@@ -219,6 +224,8 @@ Angoli generosi e sempre arrotondati: pillole (999px) per pulsanti e chip; 20px 
 ## Components
 
 - **Evidenziatore di "soluzione":** rettangolo arancione esattamente sul riquadro della parola, angoli esterni 14px, nessuna tacca interna. Nello stato fermo è un fondo CSS; con l'animazione lo compongono i 36 pezzi del canvas (12×3).
+- **Composizione a cubi:** tessere da 6px di raggio, grigie (#A3ADBF) che prendono il colore del blocco con uno strato in dissolvenza; 6 colonne × fino a 4 righe, 1200ms.
+- **Dashboard del caso studio:** card mercato (14px), pillole di stato (Aperto #DDE2EC, In chiusura accento, Esiti in arrivo blu notte), etichette di mercato 10px/800 con bordo blu e raggio 4px, evidenziazioni arancio chiaro che sfumano in 900ms.
 - **Selezione del testo:** accento chiaro (#FDE9DC) con testo blu notte. Le scrollbar restano quelle del browser.
 
 - **Pulsanti:** pillole, 14×24px, peso 600. Primario blu notte su testo bianco, secondario bianco.
