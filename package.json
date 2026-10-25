@@ -8,7 +8,8 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "verify": "node scripts/verify.mjs",
-    "verify:hero": "node scripts/verify-hero.mjs"
+    "verify:hero": "node scripts/verify-hero.mjs",
+    "verify:blocks": "node scripts/verify-blocks.mjs"
   },
   "devDependencies": {
     "typescript": "^5.9.3",

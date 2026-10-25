@@ -1,5 +1,8 @@
 *, *::before, *::after { box-sizing: border-box; }
 
+/* hidden vince sempre sul display dei componenti (grid, flex). */
+[hidden] { display: none !important; }
+
 html { scroll-behavior: auto; }
 
 body {

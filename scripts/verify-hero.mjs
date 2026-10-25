@@ -174,7 +174,8 @@ async function timeline(browser, vp) {
   // Fuori schermo il ciclo si ferma, e la scena riprende da dove era al ritorno.
   await page.waitForTimeout(700);
   await page.evaluate(() => window.scrollTo(0, document.querySelector('#percorso').offsetTop));
-  await page.waitForTimeout(300);
+  // lì si compongono i blocchi del percorso (Blocco 3): si contano i frame quando hanno finito
+  await page.waitForTimeout(2000);
   const offFrames = await framesIn(page, 800);
   check((await heroState(page)) === 'paused' && offFrames === 0, `hero fuori schermo: ciclo fermo (${offFrames} frame)`);
   await page.evaluate(() => window.scrollTo(0, 0));

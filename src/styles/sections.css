@@ -136,7 +136,6 @@
   cursor: pointer;
   background: transparent;
   color: var(--c-on-night);
-  transition: background-color 300ms ease, color 300ms ease;
 }
 .case__toggle[data-case-view="prima"][aria-pressed="true"] { background: var(--c-white); color: var(--c-night); }
 .case__toggle[data-case-view="dopo"][aria-pressed="true"] { background: var(--c-accent); color: var(--c-night); }
