@@ -10,7 +10,7 @@ web
 
 ## Stack
 
-Vite + TypeScript, senza framework (deciso in `CLAUDE.md`). Pubblicazione su GitHub Pages da `main` tramite GitHub Actions, `base: '/portfolio/'`. Font in locale, nessun cookie, nessun tracciamento.
+Vite + TypeScript, senza framework (deciso in `CLAUDE.md`). Pubblicazione su Vercel, collegato al repository GitHub: ogni push su `main` va in produzione, ogni PR ha un link di anteprima. Indirizzo del sito: `https://mariano-demagistris-portfolio.vercel.app`. In Vite `base: '/'`. Su Vercel non attivare Web Analytics né Speed Insights. Font in locale, nessun cookie, nessun tracciamento.
 
 ## Users
 
