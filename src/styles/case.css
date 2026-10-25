@@ -106,7 +106,8 @@
 .dopo__side { flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
 .is-entering .dopo__side { animation: rise 500ms ease both; animation-delay: 450ms; }
 .dopo__side .panel + .panel { gap: 8px; }
-.panel__head { position: relative; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; }
+/* align-content: con lo spazio riservato per due righe, il titolo resta in alto come nel prototipo. */
+.panel__head { position: relative; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; align-content: flex-start; gap: 8px; }
 .panel__title, .panel__label { font-size: 13px; font-weight: 700; }
 .panel__label { color: var(--c-text-2); }
 .chip-btn {

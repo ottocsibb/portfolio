@@ -25,7 +25,7 @@ interface Seed {
 }
 interface Piece {
   x: number; y: number; w: number; h: number; a: number; r: number;
-  rgb: RGB; vy: number; landed: boolean; ox: number; oy: number;
+  rgb: RGB; vy: number; landed: boolean; touched: boolean; ox: number; oy: number;
 }
 interface Target { x: number; y: number; w: number; h: number; a: number; r: number; c: string }
 interface Rect { x: number; y: number; w: number; h: number }
@@ -66,7 +66,23 @@ export interface HeroController {
   replay(): void;
 }
 
-export function initHero(): HeroController | null {
+/**
+ * Richiami per i suoni. Partono solo dal ciclo dell'hero, quindi restano muti fuori schermo e a scheda
+ * nascosta (il ciclo è fermo) e funzionano anche dopo "Rivedi".
+ */
+export interface HeroHooks {
+  /** Almeno un pezzo ha toccato il mucchio per la prima volta in questo frame. */
+  onLand?: () => void;
+  /** Almeno un task è passato nella corsia dei completati in questo frame. */
+  onClose?: () => void;
+  /** Il rettangolo è arrivato su "soluzione": una sola volta per esecuzione. */
+  onMark?: () => void;
+}
+
+/** Il rettangolo parte verso "soluzione" a T.mark e ci arriva circa 350 ms dopo. */
+const MARK_ARRIVAL = T.mark + 350;
+
+export function initHero(hooks: HeroHooks = {}): HeroController | null {
   const stage = req<HTMLElement>('#top');
   const fx = req('[data-hero-fx]', stage);
   const word = req('[data-hero-word]', stage);
@@ -110,6 +126,15 @@ export function initHero(): HeroController | null {
   let pileKey = '';
   let pileArr: number[] = [];
   let onScreen = true;
+  let landedNow = false;
+
+  /** Quanti dei 28 task aperti sono già passati nella corsia dei completati all'istante t della scena. */
+  function closedAt(t: number): number {
+    if (t < T.close) return 0;
+    let n = 0;
+    for (let i = 0; i < 28; i++) if (t >= T.close + rank[i] * T.step) n++;
+    return n;
+  }
 
   function resetPieces(): void {
     for (let i = 0; i < N; i++) {
@@ -118,7 +143,7 @@ export function initHero(): HeroController | null {
         x: sd.fx * W, y: -80,
         w: sd.w, h: sd.round ? sd.w : sd.h,
         a: 0, r: sd.round ? sd.w / 2 : 3, rgb: hexToRgb(sd.c),
-        vy: sd.v0, landed: false, ox: 0, oy: 0,
+        vy: sd.v0, landed: false, touched: false, ox: 0, oy: 0,
       };
     }
   }
@@ -223,6 +248,7 @@ export function initHero(): HeroController | null {
     const pushF = 1 - Math.pow(1 - 0.2, dt * 60);
     const fade = 1 - Math.exp(-dt / 0.15);
     let moved = 0;
+    landedNow = false;
 
     for (let i = 0; i < N; i++) {
       const p = pcs[i], sd = seeds[i];
@@ -237,6 +263,11 @@ export function initHero(): HeroController | null {
           p.a += sd.spin * pdt;
           if (p.y >= pl[i]) {
             p.y = pl[i];
+            // Un solo tic per pezzo, al primo contatto con il mucchio (non a ogni rimbalzo).
+            if (!p.touched) {
+              p.touched = true;
+              landedNow = true;
+            }
             if (Math.abs(p.vy) < 180) { p.vy = 0; p.landed = true; } else { p.vy = -p.vy * 0.32; }
           }
         }
@@ -366,10 +397,15 @@ export function initHero(): HeroController | null {
     // Il tempo della scena avanza solo mentre gira: fuori schermo o a scheda nascosta resta fermo.
     const dt = Math.min(0.1, (now - last) / 1000);
     last = now;
+    const prev = tt;
     tt += dt * 1000;
     // Si misura quando il titolo è fermo (il sollevamento di "alla soluzione." finisce a 4100 ms).
     if (wordDirty && tt >= T.mark) measureWord();
     const moved = step(dt);
+    // Suoni: al più un evento per tipo in ogni frame; il resto lo limita il modulo audio.
+    if (landedNow) hooks.onLand?.();
+    if (prev < T.rect && closedAt(Math.min(tt, T.rect)) > closedAt(prev)) hooks.onClose?.();
+    if (prev < MARK_ARRIVAL && tt >= MARK_ARRIVAL) hooks.onMark?.();
     updateText();
     draw();
     const idle = tt > T.r4 + 500 && moved < 0.05;
@@ -434,7 +470,7 @@ export function initHero(): HeroController | null {
     const L = layout();
     for (let i = 0; i < N; i++) {
       const tg = target(i, L);
-      Object.assign(pcs[i], { x: tg.x, y: tg.y, w: tg.w, h: tg.h, a: tg.a, r: tg.r, rgb: hexToRgb(tg.c), landed: true });
+      Object.assign(pcs[i], { x: tg.x, y: tg.y, w: tg.w, h: tg.h, a: tg.a, r: tg.r, rgb: hexToRgb(tg.c), landed: true, touched: true });
     }
   }
 

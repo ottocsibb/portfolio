@@ -23,7 +23,9 @@ const SECTION_COLORS: Record<SectionId, string> = {
 const ZONE_H = 48;
 const GAP = 8;
 const LOGO_CELL = 9;
-const NARROW_ZONE = 380;
+// Sotto i 640px di finestra: mattoncini in colonna e "Tocca il logo" sotto il nome. Soglia fissa sulla
+// finestra (nel prototipo era la larghezza della zona del logo, che però cambia con la lunghezza dell'invito).
+const NARROW_QUERY = window.matchMedia('(max-width: 639.98px)');
 const CLOSE_DELAY = 350;
 const REOPEN_GUARD = 450;
 
@@ -36,6 +38,7 @@ export function initHeader(hooks: HeaderHooks = {}): void {
   const zone = req('[data-hdr-zone]');
   const trigger = req<HTMLButtonElement>('[data-hdr-trigger]');
   const name = req('[data-hdr-name]');
+  const hintSm = req('[data-hdr-hint-sm]');
   const hint = req('[data-hdr-hint]');
   const cur = req('[data-hdr-cur]');
   const dot = req('[data-hdr-dot]');
@@ -87,6 +90,7 @@ export function initHeader(hooks: HeaderHooks = {}): void {
     zone.classList.toggle('lg-showtips', open && narrow);
     trigger.setAttribute('aria-expanded', String(open));
 
+    hintSm.hidden = ever || !narrow;
     if (active) {
       cur.hidden = false;
       hint.hidden = true;
@@ -95,7 +99,7 @@ export function initHeader(hooks: HeaderHooks = {}): void {
     } else {
       cur.hidden = true;
       hint.hidden = false;
-      hint.textContent = ever ? '' : narrow ? 'Tocca il logo' : '← Passa sul logo per esplorare';
+      hint.textContent = ever || narrow ? '' : '← Passa sul logo per esplorare';
     }
   }
 
@@ -161,8 +165,7 @@ export function initHeader(hooks: HeaderHooks = {}): void {
   });
 
   function updateNav(): void {
-    const zw = zone.clientWidth;
-    const nextNarrow = zw > 0 && zw < NARROW_ZONE;
+    const nextNarrow = NARROW_QUERY.matches;
     const de = document.documentElement;
     let next: SectionId | '' = '';
     for (const id of SECTIONS) {

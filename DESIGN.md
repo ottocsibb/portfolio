@@ -201,7 +201,13 @@ La pagina è un arco cromatico: grigi spenti per il caos, blu per il problema an
 
 Contenitore max 1240px, margini laterali 24px, sezioni con 112px di padding verticale. Le griglie a card usano colonne uguali che riempiono lo spazio: `repeat(auto-fill, minmax(250px, 1fr))` per il percorso, `minmax(260px, 1fr)` per i progetti, `minmax(220px, 1fr)` per le voci di Servizi (nel prototipo erano in flex senza larghezza: corretto su indicazione di Mariano).
 
-Header sticky e nel flusso, a 14px dall'alto, pillola bianca semitrasparente alta 82px in tutto (`--header-h`). L'hero occupa `min-height: calc(100svh - var(--header-h))` (nel prototipo 780px fissi). Sotto i 420px l'header mostra solo il nome: la riga dei ruoli resta nell'hero.
+Header sticky e nel flusso, a 14px dall'alto, pillola bianca semitrasparente alta 82px in tutto (`--header-h`). L'hero occupa `min-height: calc(100svh - var(--header-h))` (nel prototipo 780px fissi). Header, dalla più larga alla più stretta (scelte confermate da Mariano nel Blocco 4, per fare spazio al pulsante audio senza sovrapposizioni):
+- da 720px: nome e riga dei ruoli; a destra l'invito "← Passa sul logo per esplorare" o la sezione corrente, poi il pulsante audio;
+- sotto i 720px: la riga dei ruoli resta solo nell'hero;
+- sotto i 640px (soglia fissa sulla finestra): mattoncini in colonna e "Tocca il logo" sotto il nome, al posto dei ruoli;
+- sotto i 480px: della sezione corrente resta il quadratino colorato, il nome resta agli screen reader;
+- sotto i 420px: pulsante audio da 44px;
+- sotto i 360px: nome a 15px, barra con margine interno di 14px, sezione corrente solo per gli screen reader.
 
 ## Elevation & Depth
 
@@ -226,6 +232,8 @@ Angoli generosi e sempre arrotondati: pillole (999px) per pulsanti e chip; 20px 
 - **Evidenziatore di "soluzione":** rettangolo arancione esattamente sul riquadro della parola, angoli esterni 14px, nessuna tacca interna. Nello stato fermo è un fondo CSS; con l'animazione lo compongono i 36 pezzi del canvas (12×3).
 - **Composizione a cubi:** tessere da 6px di raggio, grigie (#A3ADBF) che prendono il colore del blocco con uno strato in dissolvenza; 6 colonne × fino a 4 righe, 1200ms.
 - **Dashboard del caso studio:** card mercato (14px), pillole di stato (Aperto #DDE2EC, In chiusura accento, Esiti in arrivo blu notte), etichette di mercato 10px/800 con bordo blu e raggio 4px, evidenziazioni arancio chiaro che sfumano in 900ms.
+- **Pulsante audio:** tondo, 40px (44px sotto i 420px), bordo #C5CCD8 come "↺ Rivedi", icona altoparlante a 20px con il tratto delle icone del logo (con le onde se acceso, barrata se spento). Acceso: fondo blu notte e icona bianca, mai arancione. Etichetta fissa "Suoni" con `aria-pressed`; nuvoletta "Attiva i suoni" / "Disattiva i suoni" ancorata al bordo destro, al passaggio e al focus, chiusa con Esc.
+- **Immagine di anteprima** (`public/og.png`, 1200×630): l'hero composto (logo, nome e ruoli, titolo con l'evidenziatore, sottofrase, "Per aziende e progetti privati") su #EEF1F6. Si rigenera con `npm run make:assets`.
 - **Selezione del testo:** accento chiaro (#FDE9DC) con testo blu notte. Le scrollbar restano quelle del browser.
 
 - **Pulsanti:** pillole, 14×24px, peso 600. Primario blu notte su testo bianco, secondario bianco.

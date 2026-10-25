@@ -129,8 +129,7 @@ Contenuti:
 
 ## Ancora da definire (non inventare: chiedi a Mariano)
 
-- URL di LinkedIn e GitHub.
-- PDF del CV per il sito, in una versione senza dati personali.
+- Il pulsante GitHub nei contatti è stato tolto (decisione di Mariano): restano "Raccontamelo" e "LinkedIn".
 - Foto sì/no, versione inglese, dominio ed email personalizzati.
 - Se aggiungere "Servizi" come quinto mattoncino nell'header.
 
