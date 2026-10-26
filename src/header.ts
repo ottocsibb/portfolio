@@ -159,13 +159,14 @@ export function initHeader(hooks: HeaderHooks = {}): void {
   });
 
   bricks.forEach((brick) => {
-    brick.addEventListener('click', (e) => {
-      // Scelta una voce: il logo si richiude e il focus esce dal logo, così nulla lo riapre durante lo scorrimento.
-      // Da tastiera (click senza puntatore) il focus va alla sezione di destinazione; al tocco o al clic si toglie.
+    brick.addEventListener('click', () => {
+      // Scelta una voce: il logo si richiude e il focus passa alla sezione scelta, da tastiera, al tocco e al clic
+      // (anche chi usa uno screen reader sul telefono attiva con un tocco). Così nulla riapre il logo durante lo
+      // scorrimento e il Tab successivo continua da lì.
       holdClosedUntil = Date.now() + 800;
       closeBricks();
       const target = document.getElementById(brick.dataset.target ?? '');
-      if (e.detail === 0 && target) {
+      if (target) {
         if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
         target.focus({ preventScroll: true });
       } else {

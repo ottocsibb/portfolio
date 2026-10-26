@@ -243,7 +243,8 @@ export function initAssemble(hooks: AssembleHooks = {}): AssembleController {
   document.addEventListener('focusin', (e) => {
     const el = (e.target as Element | null)?.closest<HTMLElement>('[data-asm]');
     const b = el && blocks.find((x) => x.el === el);
-    if (b && b.state !== 'composed') finish(b);
+    // Composto subito e senza animazione: quindi anche senza pop, come all'avvio.
+    if (b && b.state !== 'composed') finish(b, true);
   });
 
   // All'avvio (ricarica a metà pagina, link con #ancora) i blocchi già oltre l'88% sono composti subito,

@@ -3,6 +3,7 @@
 import { spawn } from 'node:child_process';
 import { mkdir, readFile, stat } from 'node:fs/promises';
 import { createRequire } from 'node:module';
+import { throttled } from './throttle.mjs';
 
 // Playwright è preinstallato globalmente nell'ambiente, non è una dipendenza del progetto.
 const require = createRequire(import.meta.url);
@@ -47,9 +48,13 @@ const ERRORS = () => {
   };
 };
 
-// AudioContext finto: registra ogni suono (tipo, frequenza, istante) e lo stato dei nodi.
-const FAKE_AUDIO = () => {
-  const A = (window.__audio = { contexts: 0, events: [], nodes: [], resumed: 0, suspended: 0 });
+// AudioContext finto: registra ogni suono (tipo, frequenza, istante, tempo della scena) e lo stato dei nodi.
+// `mode` simula i browser più difficili: 'normal' (attivo subito), 'second-gesture' (il contesto nasce sospeso e
+// riparte solo dal secondo gesto vero: il primo, per esempio Esc, non conta) e 'slow' (resume() lento, 600 ms).
+const FAKE_AUDIO = (mode = 'normal') => {
+  const A = (window.__audio = { contexts: 0, events: [], nodes: [], resumed: 0, suspended: 0, gestures: 0 });
+  // Conta i gesti prima dei listener della pagina (questo script gira per primo).
+  for (const t of ['pointerdown', 'keydown']) window.addEventListener(t, () => A.gestures++, true);
   class Param {
     constructor(v) { this.value = v; this.first = undefined; }
     setValueAtTime(v) { if (this.first === undefined) this.first = v; this.value = v; return this; }
@@ -65,16 +70,19 @@ const FAKE_AUDIO = () => {
     constructor(ctx, kind) { super(ctx, kind); this.onended = null; this.ended = false; }
     start() {
       const f = this.frequency ? (this.frequency.first ?? this.frequency.value) : null;
-      A.events.push({ t: performance.now(), node: this.kind, freq: f });
+      const st = document.querySelector('#top')?.dataset.heroT;
+      A.events.push({ t: performance.now(), sceneT: st === undefined ? null : Number(st), node: this.kind, freq: f });
     }
     stop(at) {
       setTimeout(() => { this.ended = true; this.onended?.(); }, Math.max(0, (at - this.ctx.currentTime) * 1000) + 5);
     }
   }
   class Ctx {
+    get state() { return this._state; }
+    set state(v) { this._state = v; A.state = v; }
     constructor() {
       A.contexts++;
-      this.state = 'running';
+      this.state = mode === 'normal' ? 'running' : 'suspended';
       this.sampleRate = 44100;
       this.t0 = performance.now();
       this.destination = new Node(this, 'destination');
@@ -86,7 +94,20 @@ const FAKE_AUDIO = () => {
     createBiquadFilter() { const n = new Node(this, 'filter'); n.frequency = new Param(350); n.Q = new Param(1); n.type = 'lowpass'; return n; }
     createDynamicsCompressor() { const n = new Node(this, 'limiter'); for (const k of ['threshold', 'knee', 'ratio', 'attack', 'release']) n[k] = new Param(0); return n; }
     createBuffer(_c, len) { return { getChannelData: () => new Float32Array(len) }; }
-    resume() { this.state = 'running'; A.resumed++; return Promise.resolve(); }
+    resume() {
+      A.resumed++;
+      if (mode === 'second-gesture') {
+        if (A.gestures >= 2) this.state = 'running';
+        return Promise.resolve();
+      }
+      if (mode === 'slow') {
+        const asked = A.suspended;
+        // Una suspend() chiesta nel frattempo vince, come nei browser (le richieste sono in coda).
+        return new Promise((r) => setTimeout(() => { if (A.suspended === asked) this.state = 'running'; r(); }, 600));
+      }
+      this.state = 'running';
+      return Promise.resolve();
+    }
     suspend() { this.state = 'suspended'; A.suspended++; return Promise.resolve(); }
   }
   window.AudioContext = Ctx;
@@ -104,18 +125,24 @@ function sounds(events) {
   }
   for (const [t, es] of [...byT.entries()].sort((a, b) => a[0] - b[0])) {
     const chord = es.filter((e) => e.node === 'osc' && [523.25, 659.25, 783.99].includes(e.freq));
-    if (chord.length === 3) out.push({ t, kind: 'chord' });
+    const sceneT = es[0].sceneT;
+    if (chord.length === 3) out.push({ t, sceneT, kind: 'chord' });
     for (const e of es) {
       if (chord.includes(e)) continue;
-      if (e.node === 'noise') out.push({ t, kind: 'click' });
-      else if (e.freq >= 205 && e.freq <= 235) out.push({ t, kind: 'tic' });
-      else if (e.freq === 600) out.push({ t, kind: 'pop' });
-      else out.push({ t, kind: `altro(${e.freq})` });
+      if (e.node === 'noise') out.push({ t, sceneT, kind: 'click' });
+      else if (e.freq >= 205 && e.freq <= 235) out.push({ t, sceneT, kind: 'tic' });
+      else if (e.freq === 600) out.push({ t, sceneT, kind: 'pop' });
+      else out.push({ t, sceneT, kind: `altro(${e.freq})` });
     }
   }
   return out;
 }
 const minGap = (list) => list.slice(1).reduce((m, s, i) => Math.min(m, s.t - list[i].t), Infinity);
+
+// Timeline dell'hero (src/hero/hero.ts, `T`): i suoni si confrontano con il tempo della scena (`data-hero-t`).
+const T = { pile: 2600, close: 4100, rect: 5500, mark: 6300 };
+const MARK_ARRIVAL = T.mark + 350;
+const FRAMES2 = 34; // tolleranza: due frame da 16-17 ms
 
 async function context(browser, vp, opts = {}) {
   const ctx = await browser.newContext({
@@ -128,7 +155,7 @@ async function context(browser, vp, opts = {}) {
   });
   if (!opts.noJs) {
     await ctx.addInitScript(ERRORS);
-    if (opts.fakeAudio !== false) await ctx.addInitScript(FAKE_AUDIO);
+    if (opts.fakeAudio !== false) await ctx.addInitScript(FAKE_AUDIO, opts.audioMode ?? 'normal');
     if (opts.audioOn) await ctx.addInitScript(() => { try { localStorage.setItem('portfolio-audio', 'on'); } catch {} });
   }
   const page = await ctx.newPage();
@@ -139,13 +166,26 @@ async function context(browser, vp, opts = {}) {
 }
 const pageErrors = async (page, errors) => [...errors, ...(await page.evaluate(() => window.__errors ?? []))];
 const heroState = (page) => page.getAttribute('#top', 'data-hero-state');
-/** Avanza l'orologio finto a piccoli passi, lasciando lavorare il browser (osservatori, disegno). */
-async function advance(page, ms, stepMs = 100) {
+const sceneT = (page) => page.evaluate(() => Number(document.querySelector('#top').dataset.heroT ?? NaN));
+/** Avanza l'orologio finto a passi di un frame, lasciando lavorare il browser (osservatori, disegno). */
+async function advance(page, ms, stepMs = 16) {
   for (let t = 0; t < ms; t += stepMs) {
     await page.clock.runFor(stepMs);
-    await page.waitForTimeout(5);
+    await page.waitForTimeout(1);
   }
 }
+/** Avanza l'orologio finto a passi di 16 ms finché `cond` è vera, con un limite largo (in tempo finto). */
+async function advanceUntil(page, cond, arg, limitMs = 30000) {
+  for (let t = 0; t < limitMs; t += 16) {
+    if (await page.evaluate(cond, arg)) return true;
+    await page.clock.runFor(16);
+  }
+  return page.evaluate(cond, arg);
+}
+/** Attende (in tempo reale) che la scena dell'hero sia finita, qualunque sia la velocità della macchina. */
+const heroIdle = (page) => page.waitForFunction(() => document.querySelector('#top').dataset.heroState === 'idle', null, { timeout: 60000 });
+const chordSince = (n) => window.__audio.events.slice(n).some((e) => e.freq === 523.25);
+const isIdle = () => document.querySelector('#top').dataset.heroState === 'idle';
 
 // ---------------- Suoni ----------------
 
@@ -154,42 +194,57 @@ async function audioScene(browser) {
   const { ctx, page, errors } = await context(browser, DESKTOP, { audioOn: true });
   await page.clock.install();
   await page.goto(URL, { waitUntil: 'domcontentloaded' });
-  await advance(page, 300, 50);
+  await advance(page, 300);
   check((await page.evaluate(() => window.__audio.contexts)) === 0, 'preferenza accesa al caricamento: nessun AudioContext prima di un gesto');
   await page.mouse.wheel(0, 200);
   await page.mouse.wheel(0, -200);
-  await advance(page, 100, 50);
+  await advance(page, 100);
   check((await page.evaluate(() => window.__audio.contexts)) === 0, 'lo scroll non conta come gesto');
+  // Ogni volta che il tempo della scena torna indietro, l'hero è ripartito.
+  await page.evaluate(() => {
+    window.__restarts = 0;
+    const top = document.querySelector('#top');
+    new MutationObserver((rs) => rs.forEach((r, i) => {
+      const now = i + 1 < rs.length ? rs[i + 1].oldValue : top.dataset.heroT;
+      if (r.oldValue !== null && Number(now) < Number(r.oldValue)) window.__restarts++;
+    })).observe(top, { attributes: true, attributeFilter: ['data-hero-t'], attributeOldValue: true });
+  });
   // primo gesto: il contesto nasce, l'hero NON riparte (sarebbe una sorpresa)
+  const atGesture = await sceneT(page);
   await page.mouse.click(60, 600);
-  await advance(page, 100, 50);
+  await advance(page, 100);
   check((await page.evaluate(() => window.__audio.contexts)) === 1, 'al primo clic nasce l\'AudioContext');
-  // "alla soluzione." entra a 3400 ms dall'inizio della scena: se il clic l'avesse fatta ripartire, arriverebbe dopo
-  const sinceStart = async () => page.evaluate(() => performance.now() - window.__t0);
-  while ((await sinceStart()) < 3550) await advance(page, 50, 50);
+  await advanceUntil(page, (v) => Number(document.querySelector('#top').dataset.heroT) >= v, T.close - 300);
   const w2 = await page.evaluate(() => document.querySelector('[data-hero-step="w2"]').classList.contains('is-in'));
-  check(w2, `il primo gesto non fa ripartire l'hero ("alla soluzione." già entrato a ${Math.round(await sinceStart())} ms dall'inizio)`);
-  await advance(page, 6000);
-  let ev = sounds(await page.evaluate(() => window.__audio.events));
-  const t0 = await page.evaluate(() => window.__t0);
-  const tics = ev.filter((s) => s.kind === 'tic');
-  const clicks = ev.filter((s) => s.kind === 'click');
-  const chords = ev.filter((s) => s.kind === 'chord');
-  check(tics.length > 2 && tics.length <= 36 && minGap(tics) >= 129 && tics.every((s) => s.t - t0 < 2700), `tic: ${tics.length} (al massimo uno per pezzo), distanza minima ${Math.round(minGap(tics))} ms, solo durante la cascata`);
-  check(clicks.length > 3 && minGap(clicks) >= 139 && clicks.every((s) => s.t - t0 >= 4100 && s.t - t0 < 5600), `clic: ${clicks.length}, distanza minima ${Math.round(minGap(clicks))} ms, solo durante la chiusura dei task`);
-  check(chords.length === 1 && Math.abs(chords[0].t - t0 - 6650) < 120, `accordo: ${chords.length}, a ${chords.length ? Math.round(chords[0].t - t0) : '—'} ms (arrivo su "soluzione")`);
-  check(ev.every((s) => !s.kind.startsWith('altro')), 'nessun suono sconosciuto');
+  const restarts = await page.evaluate(() => window.__restarts);
+  check(atGesture > 0 && restarts === 0 && w2, `il primo gesto (a ${atGesture} ms di scena) non fa ripartire l'hero: tempo della scena mai tornato indietro (${restarts}), "alla soluzione." entrato`);
+  const done = (await advanceUntil(page, chordSince, 0)) && (await advanceUntil(page, isIdle));
+  check(done, 'scena finita (accordo registrato e scena ferma) entro il limite');
+
+  // Momenti dei suoni sul tempo della scena: tic nella cascata, clic nella chiusura dei task, accordo all'arrivo.
+  const timing = (ev, label) => {
+    const tics = ev.filter((s) => s.kind === 'tic');
+    const clicks = ev.filter((s) => s.kind === 'click');
+    const chords = ev.filter((s) => s.kind === 'chord');
+    const span = (l) => (l.length ? `${l[0].sceneT}–${l[l.length - 1].sceneT}` : '—');
+    check(tics.length > 2 && tics.length <= 36 && minGap(tics) >= 129 && tics.every((s) => s.sceneT < T.pile), `${label}tic: ${tics.length} (al massimo uno per pezzo), distanza minima ${Math.round(minGap(tics))} ms, a ${span(tics)} ms di scena (cascata: < ${T.pile})`);
+    check(clicks.length > 3 && minGap(clicks) >= 139 && clicks.every((s) => s.sceneT >= T.close && s.sceneT < T.rect + FRAMES2), `${label}clic: ${clicks.length}, distanza minima ${Math.round(minGap(clicks))} ms, a ${span(clicks)} ms di scena (chiusura dei task: ${T.close}–${T.rect})`);
+    check(chords.length === 1 && chords[0].sceneT >= MARK_ARRIVAL && chords[0].sceneT < MARK_ARRIVAL + FRAMES2, `${label}accordo: ${chords.length}, a ${chords.length ? chords[0].sceneT : '—'} ms di scena (arrivo su "soluzione": ${MARK_ARRIVAL}, tolleranza due frame)`);
+    check(ev.every((s) => !s.kind.startsWith('altro') && s.sceneT !== null), `${label}nessun suono sconosciuto`);
+  };
+  timing(sounds(await page.evaluate(() => window.__audio.events)), '');
 
   // "Rivedi": di nuovo tutto, accordo compreso (uno per esecuzione)
   let n = (await page.evaluate(() => window.__audio.events)).length;
   await page.click('[data-hero-replay]');
-  await advance(page, 9500);
-  ev = sounds((await page.evaluate(() => window.__audio.events)).slice(n));
-  check(ev.filter((s) => s.kind === 'chord').length === 1 && ev.some((s) => s.kind === 'tic') && ev.some((s) => s.kind === 'click'), `"Rivedi": tic, clic e un solo accordo (${ev.filter((s) => s.kind === 'chord').length})`);
+  const replayed = (await advanceUntil(page, chordSince, n)) && (await advanceUntil(page, isIdle));
+  check(replayed && (await page.evaluate(() => window.__restarts)) === 1, '"Rivedi": la scena riparte una volta e arriva in fondo entro il limite');
+  timing(sounds((await page.evaluate(() => window.__audio.events)).slice(n)), '"Rivedi" · ');
+  let ev;
 
   // Hero fuori schermo: nessun suono dell'hero
   await page.click('[data-hero-replay]');
-  await advance(page, 300, 50);
+  await advance(page, 300);
   await page.evaluate(() => window.scrollTo(0, document.querySelector('#percorso').offsetTop));
   await page.waitForTimeout(200);
   n = (await page.evaluate(() => window.__audio.events)).length;
@@ -238,7 +293,7 @@ async function audioScene(browser) {
   await page.evaluate(() => window.scrollTo(0, 0));
   n = (await page.evaluate(() => window.__audio.events)).length;
   await page.hover('[data-hdr-trigger]', { position: { x: 12, y: 24 }, force: true });
-  await advance(page, 300, 50);
+  await advance(page, 300);
   ev = sounds((await page.evaluate(() => window.__audio.events)).slice(n));
   check(ev.filter((s) => s.kind === 'pop').length === 1, 'pop all\'apertura del logo');
 
@@ -265,11 +320,11 @@ async function audioButton(browser) {
   // Attivazione con l'hero visibile: pop di conferma e l'hero riparte
   let { ctx, page, errors } = await context(browser, DESKTOP);
   await page.goto(URL, { waitUntil: 'networkidle' });
-  await page.waitForTimeout(9500);
+  await heroIdle(page);
   check((await page.getAttribute('[data-audio]', 'aria-pressed')) === 'false' && (await page.evaluate(() => window.__audio.contexts)) === 0, 'spento di default, nessun AudioContext');
   const label = await page.getAttribute('[data-audio]', 'aria-label');
   await page.click('[data-audio]');
-  await page.waitForTimeout(150);
+  await page.waitForFunction(() => window.__audio.events.length > 0, null, { timeout: 10000 });
   let s = await page.evaluate(() => ({
     pressed: document.querySelector('[data-audio]').getAttribute('aria-pressed'),
     label: document.querySelector('[data-audio]').getAttribute('aria-label'),
@@ -293,10 +348,11 @@ async function audioButton(browser) {
   // Attivazione con l'hero fuori schermo: si accende soltanto
   ({ ctx, page, errors } = await context(browser, DESKTOP));
   await page.goto(URL, { waitUntil: 'networkidle' });
-  await page.waitForTimeout(9500);
+  await heroIdle(page);
   await page.evaluate(() => window.scrollTo(0, document.querySelector('#percorso').offsetTop));
   await page.waitForTimeout(300);
   await page.click('[data-audio]');
+  await page.waitForFunction(() => window.__audio.events.length > 0, null, { timeout: 10000 });
   await page.waitForTimeout(200);
   s = await page.evaluate(() => ({ r3: document.querySelector('[data-hero-step="r3"]').classList.contains('is-in') }));
   ev = sounds(await page.evaluate(() => window.__audio.events));
@@ -374,6 +430,89 @@ async function audioLateScript(browser) {
   await ctx.close();
 }
 
+/** Browser difficili: il primo gesto non basta, oppure resume() è lento e nel frattempo l'audio viene spento. */
+async function audioRobust(browser) {
+  console.log('\nsuoni · contesto che non parte al primo gesto, avvio lento');
+  let { ctx, page, errors } = await context(browser, DESKTOP, { audioOn: true, audioMode: 'second-gesture' });
+  await page.goto(URL, { waitUntil: 'networkidle' });
+  const audio = () => page.evaluate(() => ({ contexts: window.__audio.contexts, resumed: window.__audio.resumed, state: window.__audio.state }));
+  await page.keyboard.press('Escape'); // gesto che il browser non conta: il contesto resta sospeso
+  await page.waitForTimeout(200);
+  const g1 = await audio();
+  await page.mouse.click(60, 600);
+  await page.waitForTimeout(200);
+  const g2 = await audio();
+  await page.mouse.click(60, 600);
+  await page.keyboard.press('Shift');
+  await page.waitForTimeout(200);
+  const g3 = await audio();
+  check(g1.contexts === 1 && g1.resumed >= 1 && g1.state === 'suspended', `primo gesto inutile: contesto creato ma "${g1.state}" (${g1.resumed} tentativi)`);
+  check(g2.resumed > g1.resumed && g2.state === 'running', `i listener restano: il secondo gesto riprova (${g2.resumed} tentativi in tutto) e l'audio è "${g2.state}"`);
+  check(g3.resumed === g2.resumed && g3.contexts === 1, `con l'audio attivo i listener si tolgono: altri gesti non riprovano (${g3.resumed})`);
+  await page.hover('[data-hdr-trigger]', { position: { x: 12, y: 24 }, force: true });
+  await page.waitForFunction(() => window.__audio.events.some((e) => e.freq === 600), null, { timeout: 5000 }).catch(() => {});
+  check((await page.evaluate(() => window.__audio.events.some((e) => e.freq === 600))), 'dopo il secondo gesto i suoni funzionano (pop all\'apertura del logo)');
+  check((await pageErrors(page, errors)).length === 0, 'nessun errore');
+  await ctx.close();
+
+  ({ ctx, page, errors } = await context(browser, DESKTOP, { audioMode: 'slow' }));
+  await page.goto(URL, { waitUntil: 'networkidle' });
+  await heroIdle(page);
+  await page.click('[data-audio]'); // accende: resume() impiega 600 ms
+  await page.waitForTimeout(80);
+  await page.click('[data-audio]'); // e lo si spegne prima che finisca
+  await page.waitForTimeout(1500);
+  const s = await page.evaluate(() => ({
+    pressed: document.querySelector('[data-audio]').getAttribute('aria-pressed'),
+    pref: localStorage.getItem('portfolio-audio'),
+    r3: document.querySelector('[data-hero-step="r3"]').classList.contains('is-in'),
+    resumed: window.__audio.resumed,
+  }));
+  const ev = sounds(await page.evaluate(() => window.__audio.events));
+  check(s.resumed === 1 && s.pressed === 'false' && s.pref === 'off', `avvio lento e poi spento: resta spento (aria-pressed=${s.pressed}, scelta "${s.pref}")`);
+  check(ev.length === 0 && s.r3 && (await heroState(page)) === 'idle', `nessun pop (${ev.length} suoni) e l'hero non riparte`);
+  check((await pageErrors(page, errors)).length === 0, 'nessun errore');
+  await ctx.close();
+}
+
+/** Tab dentro un blocco non ancora composto (i contatti), con l'audio acceso: composto subito e senza pop. */
+async function focusCompose(browser) {
+  console.log('\nblocchi · composti dal focus, senza pop');
+  const { ctx, page, errors } = await context(browser, DESKTOP, { audioOn: true });
+  await page.goto(URL, { waitUntil: 'networkidle' });
+  await page.mouse.click(60, 600); // primo gesto: l'audio è attivo
+  await heroIdle(page);
+  // Si compone tutto fino ai servizi; i contatti restano sotto la soglia dell'88%, quindi non composti.
+  const H = await page.evaluate(() => document.querySelector('#contatti').offsetTop - innerHeight * 0.95);
+  for (let y = 0; y <= H; y += 300) {
+    await page.evaluate((v) => window.scrollTo(0, v), Math.min(y, H));
+    await page.waitForTimeout(150);
+  }
+  await page.evaluate((v) => window.scrollTo(0, v), H);
+  await page.waitForFunction(() => document.querySelectorAll('#servizi [data-asm-state="composed"]').length === document.querySelectorAll('#servizi [data-asm]').length, null, { timeout: 10000 });
+  await page.waitForTimeout(400);
+  const before = await page.evaluate(() => ({ state: document.querySelector('[data-asm="contBox"]').dataset.asmState, n: window.__audio.events.length, running: window.__audio.contexts === 1 }));
+  // Dall'ultimo elemento raggiungibile prima dei contatti, un Tab porta il focus su "Raccontamelo".
+  await page.evaluate(() => {
+    const c = document.querySelector('#contatti');
+    const all = [...document.querySelectorAll('a[href], button')].filter((e) => e.tabIndex >= 0 && e.getClientRects().length && (e.compareDocumentPosition(c) & Node.DOCUMENT_POSITION_FOLLOWING));
+    all[all.length - 1].focus({ preventScroll: true });
+  });
+  await page.evaluate(() => {
+    window.__asmStates = [];
+    new MutationObserver(() => window.__asmStates.push(document.querySelector('[data-asm="contBox"]').dataset.asmState))
+      .observe(document.querySelector('[data-asm="contBox"]'), { attributes: true, attributeFilter: ['data-asm-state'] });
+  });
+  await page.keyboard.press('Tab');
+  await page.waitForTimeout(1800);
+  const after = await page.evaluate(() => ({ active: document.activeElement.textContent.trim(), state: document.querySelector('[data-asm="contBox"]').dataset.asmState, states: window.__asmStates }));
+  const ev = sounds((await page.evaluate(() => window.__audio.events)).slice(before.n));
+  check(before.running && before.state === 'waiting' && after.active === 'Raccontamelo', `Tab nei contatti non composti (stato "${before.state}"): focus su "${after.active}"`);
+  check(after.state === 'composed' && !after.states.includes('composing') && ev.filter((x) => x.kind === 'pop').length === 0, `composto subito, senza animazione (${after.states.join(' → ') || 'nessun cambio'}) e senza pop (${ev.filter((x) => x.kind === 'pop').length})`);
+  check((await pageErrors(page, errors)).length === 0, 'nessun errore');
+  await ctx.close();
+}
+
 // ---------------- Header ----------------
 
 async function headerGeometry(browser) {
@@ -431,6 +570,26 @@ async function headerGeometry(browser) {
   check(bad.length === 0, `da 320 a 1440px (${widths.length} larghezze × 4 stati)${bad.length ? ' — ' + bad.join(' | ') : ''}`);
 }
 
+/** Segna il primo elemento raggiungibile con Tab dopo l'elemento attivo (in ordine di documento, discendenti compresi). */
+const markNextTabbable = (page) => page.evaluate(() => {
+  const from = document.activeElement;
+  document.querySelectorAll('[data-expect-next]').forEach((e) => e.removeAttribute('data-expect-next'));
+  const next = [...document.querySelectorAll('a[href], button, input, select, textarea, [tabindex]')].find((e) =>
+    e.tabIndex >= 0 && !e.disabled && !e.closest('[hidden], [inert]') && e.getClientRects().length && getComputedStyle(e).visibility !== 'hidden' &&
+    (from.compareDocumentPosition(e) & Node.DOCUMENT_POSITION_FOLLOWING));
+  next?.setAttribute('data-expect-next', '');
+  return next ? (next.getAttribute('aria-label') || next.textContent.trim().slice(0, 30) || next.className) : null;
+});
+/** Focus sulla sezione dopo la scelta di una voce: id, contorno e il Tab successivo. */
+async function sectionFocus(page) {
+  const f = await page.evaluate(() => ({ id: document.activeElement?.id, outline: getComputedStyle(document.activeElement).outlineStyle }));
+  const next = await markNextTabbable(page);
+  await page.keyboard.press('Tab');
+  f.next = next;
+  f.tabOk = next !== null && (await page.evaluate(() => document.activeElement.hasAttribute('data-expect-next')));
+  return f;
+}
+
 /** Su telefono: scelta una voce del menu, il logo torna come prima (segnalazione di Mariano). */
 async function headerMenuMobile(browser) {
   console.log('\nheader · su telefono il logo torna chiuso dopo la scelta di una voce');
@@ -439,7 +598,7 @@ async function headerMenuMobile(browser) {
     const ctx = await browser.newContext({ ...devices[dev] });
     await ctx.addInitScript(ERRORS);
     const page = await ctx.newPage();
-    const cdp = await ctx.newCDPSession(page);
+      const cdp = await ctx.newCDPSession(page);
     await page.goto(URL, { waitUntil: 'networkidle' });
     // Sui telefoni veri, dopo un tocco lo stato :hover resta sull'elemento toccato ("hover appiccicoso"):
     // Playwright non lo fa da solo, lo si forza con il protocollo di Chromium.
@@ -460,7 +619,9 @@ async function headerMenuMobile(browser) {
       cubes: [...document.querySelectorAll('[data-hdr-slot]')].map((s) => Math.round(s.getBoundingClientRect().width)),
     }));
     const results = [];
-    for (const brick of ['.lg-brick--path', '.lg-brick--proj', '.lg-brick--mail', '.lg-brick--case']) {
+    const focus = [];
+    const targets = { '.lg-brick--path': 'percorso', '.lg-brick--proj': 'progetti', '.lg-brick--mail': 'contatti', '.lg-brick--case': 'caso' };
+    for (const brick of Object.keys(targets)) {
       await page.tap('[data-hdr-trigger]');
       await page.waitForTimeout(700);
       await page.evaluate(() => window.scrollBy(0, 300)); // scorre con il menu aperto
@@ -471,9 +632,12 @@ async function headerMenuMobile(browser) {
       await page.waitForTimeout(1600);
       results.push([brick, await state()]);
       await release();
+      focus.push([targets[brick], await sectionFocus(page)]);
     }
     const bad = results.filter(([, s]) => s.open || s.expanded !== 'false' || s.focusInLogo || s.tips > 0 || s.lifted > 0 || s.cubes.some((c) => c > 10));
     check(bad.length === 0, `${dev}: dopo 4 voci scelte, anche con l'hover appiccicoso, il logo torna come prima (cubetti ${results[0][1].cubes.join('/')}px, nessun cubetto sollevato, nessuna nuvoletta, niente focus nel logo)${bad.length ? ' — ' + JSON.stringify(bad.map(([b, s]) => [b, s])) : ''}`);
+    const badFocus = focus.filter(([id, f]) => f.id !== id || f.outline !== 'none' || !f.tabOk);
+    check(badFocus.length === 0, `${dev}: al tocco il focus va alla sezione scelta, senza contorno, e il Tab successivo arriva al primo elemento dopo (${focus.map(([id, f]) => `#${id} → ${f.next}`).join(', ')})${badFocus.length ? ' — ' + JSON.stringify(badFocus) : ''}`);
     // Il browser che restituisce il focus al mattoncino subito dopo la scelta non riapre il logo.
     await page.tap('[data-hdr-trigger]');
     await page.waitForTimeout(700);
@@ -486,8 +650,8 @@ async function headerMenuMobile(browser) {
     check(errs.length === 0, `${dev}: nessun errore`);
     await ctx.close();
   }
-  // Da tastiera: la voce scelta porta il focus alla sezione
-  const { ctx, page } = await context(browser, DESKTOP);
+  // Da tastiera e con il mouse: la voce scelta porta il focus alla sezione, senza contorno
+  const { ctx, page, errors } = await context(browser, DESKTOP);
   await page.goto(URL, { waitUntil: 'networkidle' });
   await page.focus('[data-hdr-trigger]');
   await page.waitForTimeout(600);
@@ -495,8 +659,20 @@ async function headerMenuMobile(browser) {
   await page.keyboard.press('Tab');
   await page.keyboard.press('Enter');
   await page.waitForTimeout(1500);
-  const k = await page.evaluate(() => ({ id: document.activeElement?.id, open: document.querySelector('[data-hdr-zone]').classList.contains('lg-open') }));
-  check(k.id === 'percorso' && !k.open, `da tastiera: logo chiuso e focus sulla sezione scelta (#${k.id})`);
+  const open = () => page.evaluate(() => document.querySelector('[data-hdr-zone]').classList.contains('lg-open'));
+  const k = await sectionFocus(page);
+  check(k.id === 'percorso' && !(await open()) && k.outline === 'none' && k.tabOk, `da tastiera: logo chiuso, focus sulla sezione scelta (#${k.id}) senza contorno (${k.outline}), poi Tab su "${k.next}"`);
+  await page.mouse.move(700, 500);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(300);
+  await page.hover('[data-hdr-trigger]', { position: { x: 12, y: 24 }, force: true });
+  await page.waitForTimeout(700);
+  await page.click('.lg-brick--proj');
+  await page.mouse.move(700, 500);
+  await page.waitForTimeout(1500);
+  const m = await sectionFocus(page);
+  check(m.id === 'progetti' && !(await open()) && m.outline === 'none' && m.tabOk, `con il mouse: logo chiuso, focus sulla sezione scelta (#${m.id}) senza contorno (${m.outline}), poi Tab su "${m.next}"`);
+  check((await pageErrors(page, errors)).length === 0, 'nessun errore');
   await ctx.close();
 }
 
@@ -594,7 +770,7 @@ async function wholePage(browser) {
     const foreign = [];
     page.on('request', (r) => { if (!r.url().startsWith(URL) && !r.url().startsWith('data:') && !r.url().startsWith('blob:')) foreign.push(r.url()); });
     await page.goto(URL, { waitUntil: 'networkidle' });
-    await page.waitForTimeout(9000);
+    await heroIdle(page);
     await composeAll(page);
     await page.screenshot({ path: `${OUT}/${vp.name}-pagina.png`, fullPage: true });
     const basics = await page.evaluate(() => ({ h1: document.querySelectorAll('h1').length, lang: document.documentElement.lang, overflow: document.documentElement.scrollWidth - innerWidth, waiting: document.querySelectorAll('[data-asm-state="waiting"]').length }));
@@ -651,11 +827,13 @@ if (await fetch(URL).then(() => true, () => false)) {
 const server = spawn(process.execPath, ['node_modules/vite/bin/vite.js', 'preview', '--port', String(PORT), '--strictPort'], { stdio: 'ignore' });
 try {
   await waitForServer();
-  const browser = await chromium.launch();
+  const browser = throttled(await chromium.launch());
   await audioScene(browser);
   await audioButton(browser);
   await audioReduced(browser);
   await audioLateScript(browser);
+  await audioRobust(browser);
+  await focusCompose(browser);
   await headerGeometry(browser);
   await headerMenuMobile(browser);
   await block3Fixes(browser);

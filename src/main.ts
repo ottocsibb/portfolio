@@ -41,10 +41,13 @@ function heroMostlyVisible(): boolean {
   return r.height > 0 && visible / r.height >= 0.5;
 }
 
+let activation = 0;
 audioBtn.addEventListener('click', () => {
   const on = !sound.isEnabled();
+  const id = ++activation;
   void sound.setEnabled(on).then(() => {
-    if (!on) return;
+    // L'avvio può essere lento: se nel frattempo l'audio è stato spento (o riacceso con un altro clic), non si fa nulla.
+    if (!on || id !== activation || !sound.isEnabled()) return;
     sound.play('pop'); // conferma, anche con "riduci movimento"
     if (hero && heroMostlyVisible()) hero.replay();
   });

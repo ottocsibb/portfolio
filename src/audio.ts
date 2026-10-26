@@ -36,11 +36,16 @@ export class Sound {
 
   constructor() {
     // Preferenza già accesa: i suoni partono dal primo gesto (non dallo scroll), senza far ripartire nulla.
-    const firstGesture = () => {
-      if (this.enabled) void this.ensureContext();
-      for (const t of GESTURES) window.removeEventListener(t, firstGesture, true);
-    };
+    // I listener si tolgono solo quando l'audio è davvero attivo: un evento che il browser non conta come
+    // gesto (per esempio Esc) lascia il contesto sospeso, e il gesto successivo riprova.
     const GESTURES = ['pointerup', 'touchend', 'keydown', 'click'];
+    const stop = () => { for (const t of GESTURES) window.removeEventListener(t, firstGesture, true); };
+    const firstGesture = () => {
+      if (!this.enabled) return stop();
+      void this.ensureContext().then(() => {
+        if (this.ctx?.state === 'running') stop();
+      });
+    };
     if (this.enabled) for (const t of GESTURES) window.addEventListener(t, firstGesture, true);
     document.addEventListener('visibilitychange', () => {
       if (!this.ctx) return;

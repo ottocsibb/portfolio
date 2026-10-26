@@ -399,6 +399,8 @@ export function initHero(hooks: HeroHooks = {}): HeroController | null {
     last = now;
     const prev = tt;
     tt += dt * 1000;
+    // Tempo della scena, letto dalle verifiche (i suoni si confrontano con la timeline, non con l'orologio).
+    stage.dataset.heroT = String(Math.round(tt));
     // Si misura quando il titolo è fermo (il sollevamento di "alla soluzione." finisce a 4100 ms).
     if (wordDirty && tt >= T.mark) measureWord();
     const moved = step(dt);

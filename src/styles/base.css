@@ -25,6 +25,8 @@ a:hover { color: var(--c-accent-dark); }
 .case .board :focus-visible { outline-color: var(--c-night); }
 
 section[id] { scroll-margin-top: 96px; }
+/* Le sezioni ricevono il focus dal menu del logo (per non perdere la posizione): niente contorno grande quanto la pagina. */
+section[tabindex="-1"]:focus { outline: none; }
 
 .h2 {
   margin: 0;
