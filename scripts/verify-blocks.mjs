@@ -3,6 +3,7 @@
 import { spawn } from 'node:child_process';
 import { mkdir, readFile, readdir } from 'node:fs/promises';
 import { createRequire } from 'node:module';
+import { throttled } from './throttle.mjs';
 
 // Playwright è preinstallato globalmente nell'ambiente, non è una dipendenza del progetto.
 const require = createRequire(import.meta.url);
@@ -853,7 +854,7 @@ if (await fetch(URL).then(() => true, () => false)) {
 const server = spawn(process.execPath, ['node_modules/vite/bin/vite.js', 'preview', '--port', String(PORT), '--strictPort'], { stdio: 'ignore' });
 try {
   await waitForServer();
-  const browser = await chromium.launch();
+  const browser = throttled(await chromium.launch());
   for (const vp of VIEWPORTS) {
     await cubes(browser, vp);
     await anchors(browser, vp);

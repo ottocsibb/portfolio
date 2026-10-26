@@ -9,9 +9,12 @@
     "preview": "vite preview",
     "verify": "node scripts/verify.mjs",
     "verify:hero": "node scripts/verify-hero.mjs",
-    "verify:blocks": "node scripts/verify-blocks.mjs"
+    "verify:blocks": "node scripts/verify-blocks.mjs",
+    "verify:final": "node scripts/verify-final.mjs",
+    "make:assets": "node scripts/make-assets.mjs"
   },
   "devDependencies": {
+    "axe-core": "^4.10.3",
     "typescript": "^5.9.3",
     "vite": "^8.3.5"
   },

@@ -3,7 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Portfolio Mariano</title>
+<title>Mariano De Magistris · Dal problema alla soluzione</title>
+<meta name="description" content="Team leader · Analista funzionale · Developer. Prendo problemi complessi, li scompongo, creo soluzioni. Per aziende e progetti privati.">
+<link rel="canonical" href="%SITE_URL%/">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="it_IT">
+<meta property="og:url" content="%SITE_URL%/">
+<meta property="og:title" content="Mariano De Magistris · Dal problema alla soluzione">
+<meta property="og:description" content="Team leader · Analista funzionale · Developer. Prendo problemi complessi, li scompongo, creo soluzioni. Per aziende e progetti privati.">
+<meta property="og:image" content="%SITE_URL%/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Dal problema alla soluzione. Mariano De Magistris, team leader, analista funzionale e developer.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Mariano De Magistris · Dal problema alla soluzione">
+<meta name="twitter:description" content="Team leader · Analista funzionale · Developer. Prendo problemi complessi, li scompongo, creo soluzioni. Per aziende e progetti privati.">
+<meta name="twitter:image" content="%SITE_URL%/og.png">
 <script>
   // Prima del primo disegno: se l'hero si animerà, nasconde subito testi ed evidenziatore.
   // Se lo script principale non parte entro 4 s, torna lo stato fermo; quando lo script
@@ -30,6 +48,7 @@
         <div class="lg-name" data-hdr-name aria-hidden="true">
           <span class="lg-name__title">Mariano De Magistris</span>
           <span class="lg-name__roles">Team leader · Analista funzionale · Developer</span>
+          <span class="lg-name__hint" data-hdr-hint-sm hidden>Tocca il logo</span>
         </div>
         <div id="lg-sections" class="lg-sections" role="group" aria-label="Sezioni">
           <div class="lg-slot" data-hdr-slot>
@@ -59,9 +78,17 @@
         </div>
       </div>
 
-      <div class="hdr-status" aria-live="polite" data-hdr-status>
-        <span class="hdr-status__hint" data-hdr-hint>← Passa sul logo per esplorare</span>
-        <span class="hdr-status__cur" data-hdr-cur hidden><span class="hdr-status__dot" aria-hidden="true" data-hdr-dot></span><span data-hdr-label></span></span>
+      <div class="hdr-right">
+        <div class="hdr-status" aria-live="polite" data-hdr-status>
+          <span class="hdr-status__hint" data-hdr-hint>← Passa sul logo per esplorare</span>
+          <span class="hdr-status__cur" data-hdr-cur hidden><span class="hdr-status__dot" aria-hidden="true" data-hdr-dot></span><span class="hdr-status__label" data-hdr-label></span></span>
+        </div>
+        <!-- Pulsante audio: mostrato dallo script (senza JS non avrebbe effetto). -->
+        <button type="button" class="hdr-audio" data-audio aria-pressed="false" aria-label="Suoni" hidden>
+          <svg class="hdr-audio__icon hdr-audio__icon--off" aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5z"></path><path d="M16 9l5 6M21 9l-5 6"></path></svg>
+          <svg class="hdr-audio__icon hdr-audio__icon--on" aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5z"></path><path d="M15.5 8.5a5 5 0 0 1 0 7"></path><path d="M18.5 5.5a9 9 0 0 1 0 13"></path></svg>
+          <span class="hdr-audio__tip" aria-hidden="true" data-audio-tip>Attiva i suoni</span>
+        </button>
       </div>
 
     </nav>
@@ -268,8 +295,6 @@
     <div class="contact__links">
       <a class="btn btn--primary" href="mailto:mariano_demagistris@hotmail.it">Raccontamelo</a>
       <a class="btn btn--secondary" href="https://www.linkedin.com/in/mariano-de-magistris-754687b5" target="_blank" rel="noopener">LinkedIn</a>
-      <!-- TODO: segnaposto, manca l'URL di GitHub -->
-      <a class="btn btn--secondary" href="#da-definire-github" data-placeholder="github">GitHub</a>
     </div>
   </div>
   <footer class="footer">

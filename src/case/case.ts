@@ -242,10 +242,34 @@ export function initCase(assemble: AssembleController): void {
     }));
     const tc = tallest(cw, cardVariants);
     for (const c of cards) c.b.style.minHeight = `${tc}px`;
+    updateColsFocus();
+  }
+
+  /** La board scorre in orizzontale (su mobile): allora deve essere raggiungibile da tastiera. */
+  function updateColsFocus(): void {
+    if (cols.scrollWidth > cols.clientWidth + 1) {
+      cols.tabIndex = 0;
+      cols.setAttribute('role', 'region');
+      cols.setAttribute('aria-label', 'Task');
+    } else {
+      cols.removeAttribute('tabindex');
+      cols.removeAttribute('role');
+      cols.removeAttribute('aria-label');
+    }
   }
 
   // Si rimisura quando cambia la larghezza (non a ogni passo) e quando arrivano i font definitivi.
-  new ResizeObserver(() => reserveSpace()).observe(dopo);
+  // L'observer guarda solo la larghezza e rimanda la misura al frame dopo: cambiare altezze dentro il suo
+  // callback produrrebbe "ResizeObserver loop completed with undelivered notifications".
+  // Quando "Dopo" compare, la misura la chiama direttamente setView.
+  let dopoWidth = 0;
+  let measureFrame = 0;
+  new ResizeObserver((entries) => {
+    const w = entries[entries.length - 1].contentRect.width;
+    if (w === dopoWidth) return;
+    dopoWidth = w;
+    if (!measureFrame) measureFrame = requestAnimationFrame(() => { measureFrame = 0; reserveSpace(); });
+  }).observe(dopo);
   document.fonts.ready.then(() => {
     measuredFor = '';
     reserveSpace();
@@ -309,7 +333,10 @@ export function initCase(assemble: AssembleController): void {
     noView.hidden = isDopo;
     live.hidden = !isDopo;
     caption.textContent = CAPTIONS[v];
-    if (isDopo) renderDopo();
+    if (isDopo) {
+      reserveSpace();
+      renderDopo();
+    }
     if (changed && !reduce) replayEntrance(isDopo ? dopo : prima);
     renderProgress();
   }
